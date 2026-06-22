@@ -14,6 +14,21 @@ function ContentPage () {
     const [totalWeight, setTotalWeight] = useState(null);
 
     const mstEdgeIds = useMemo(() => new Set(mstEdges.map((edge) => edge.id)), [mstEdges]);
+    const resultViewBox = useMemo(() => {
+        if (nodes.length === 0) {
+            return '0 0 320 320';
+        }
+
+        const padding = 70;
+        const nodeXs = nodes.map((node) => node.x);
+        const nodeYs = nodes.map((node) => node.y);
+        const minX = Math.min(...nodeXs) - padding;
+        const minY = Math.min(...nodeYs) - padding;
+        const width = Math.max(Math.max(...nodeXs) - Math.min(...nodeXs) + padding * 2, 260);
+        const height = Math.max(Math.max(...nodeYs) - Math.min(...nodeYs) + padding * 2, 260);
+
+        return `${minX} ${minY} ${width} ${height}`;
+    }, [nodes]);
 
     const getPointerPosition = (event) => {
         const rect = graphRef.current.getBoundingClientRect();
@@ -239,72 +254,125 @@ function ContentPage () {
                 </div>
             </div>
 
-            <div
-                ref={graphRef}
-                onDoubleClick={handleDoubleClick}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                className='background'
-            >
-                <svg className='edge-layer'>
-                    {edges.map((edge) => {
-                        const fromNode = getNodeById(edge.from);
-                        const toNode = getNodeById(edge.to);
+            <div className='workspace'>
+                <div
+                    ref={graphRef}
+                    onDoubleClick={handleDoubleClick}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    className='background'
+                >
+                    <svg className='edge-layer'>
+                        {edges.map((edge) => {
+                            const fromNode = getNodeById(edge.from);
+                            const toNode = getNodeById(edge.to);
 
-                        if (!fromNode || !toNode) {
-                            return null;
-                        }
+                            if (!fromNode || !toNode) {
+                                return null;
+                            }
 
-                        const middleX = (fromNode.x + toNode.x) / 2;
-                        const middleY = (fromNode.y + toNode.y) / 2;
-                        const isMstEdge = mstEdgeIds.has(edge.id);
+                            const middleX = (fromNode.x + toNode.x) / 2;
+                            const middleY = (fromNode.y + toNode.y) / 2;
+                            const isMstEdge = mstEdgeIds.has(edge.id);
 
-                        return (
-                            <g key={edge.id}>
-                                <line
-                                    x1={fromNode.x}
-                                    y1={fromNode.y}
-                                    x2={toNode.x}
-                                    y2={toNode.y}
-                                    className={isMstEdge ? 'edge mst-edge' : 'edge'}
-                                />
-                                <text
-                                    x={middleX}
-                                    y={middleY}
-                                    className={isMstEdge ? 'edge-weight mst-weight' : 'edge-weight'}
-                                >
-                                    {edge.weight}
-                                </text>
-                            </g>
-                        );
-                    })}
-                    {previewStartNode && previewPosition && (
-                        <line
-                            x1={previewStartNode.x}
-                            y1={previewStartNode.y}
-                            x2={previewPosition.x}
-                            y2={previewPosition.y}
-                            className='preview-edge'
-                        />
+                            return (
+                                <g key={edge.id}>
+                                    <line
+                                        x1={fromNode.x}
+                                        y1={fromNode.y}
+                                        x2={toNode.x}
+                                        y2={toNode.y}
+                                        className={isMstEdge ? 'edge mst-edge' : 'edge'}
+                                    />
+                                    <text
+                                        x={middleX}
+                                        y={middleY}
+                                        className={isMstEdge ? 'edge-weight mst-weight' : 'edge-weight'}
+                                    >
+                                        {edge.weight}
+                                    </text>
+                                </g>
+                            );
+                        })}
+                        {previewStartNode && previewPosition && (
+                            <line
+                                x1={previewStartNode.x}
+                                y1={previewStartNode.y}
+                                x2={previewPosition.x}
+                                y2={previewPosition.y}
+                                className='preview-edge'
+                            />
+                        )}
+                    </svg>
+
+                    {nodes.map((node) => (
+                        <button
+                            key={node.id}
+                            type='button'
+                            className={
+                                dragStartNodeId === node.id || movingNodeId === node.id
+                                    ? 'node selected-node'
+                                    : 'node'
+                            }
+                            style={{ left: node.x, top: node.y }}
+                            onMouseDown={(event) => handleNodeMouseDown(node.id, event)}
+                            onMouseUp={(event) => handleNodeMouseUp(node.id, event)}
+                        >
+                            {node.id}
+                        </button>
+                    ))}
+                </div>
+
+                <aside className='result-panel'>
+                    <div className='result-header'>
+                        <strong>Arbol resultado</strong>
+                        {totalWeight !== null && <span>Peso: {totalWeight}</span>}
+                    </div>
+
+                    {totalWeight === null ? (
+                        <div className='empty-result'>
+                            Calcula el arbol para ver el resultado.
+                        </div>
+                    ) : (
+                        <svg className='result-graph' viewBox={resultViewBox}>
+                            {mstEdges.map((edge) => {
+                                const fromNode = getNodeById(edge.from);
+                                const toNode = getNodeById(edge.to);
+
+                                if (!fromNode || !toNode) {
+                                    return null;
+                                }
+
+                                const middleX = (fromNode.x + toNode.x) / 2;
+                                const middleY = (fromNode.y + toNode.y) / 2;
+
+                                return (
+                                    <g key={edge.id}>
+                                        <line
+                                            x1={fromNode.x}
+                                            y1={fromNode.y}
+                                            x2={toNode.x}
+                                            y2={toNode.y}
+                                            className='result-edge'
+                                        />
+                                        <text x={middleX} y={middleY} className='result-weight'>
+                                            {edge.weight}
+                                        </text>
+                                    </g>
+                                );
+                            })}
+
+                            {nodes.map((node) => (
+                                <g key={node.id}>
+                                    <circle cx={node.x} cy={node.y} r='22' className='result-node' />
+                                    <text x={node.x} y={node.y} className='result-node-label'>
+                                        {node.id}
+                                    </text>
+                                </g>
+                            ))}
+                        </svg>
                     )}
-                </svg>
-
-                {nodes.map((node) => (
-                    <button
-                        key={node.id}
-                        type='button'
-                        className={
-                            dragStartNodeId === node.id || movingNodeId === node.id
-                                ? 'node selected-node'
-                                : 'node'
-                        }
-                        style={{ left: node.x, top: node.y }}
-                        onMouseDown={(event) => handleNodeMouseDown(node.id, event)}
-                        onMouseUp={(event) => handleNodeMouseUp(node.id, event)}
-                    >
-                        {node.id}
-                    </button>
-                ))}
+                </aside>
             </div>
 
             <div className='status-bar'>
