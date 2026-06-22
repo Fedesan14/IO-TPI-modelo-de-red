@@ -69,7 +69,38 @@
     color: #2457c5;
 }
 
-.actions > button:last-child {
+.random-controls {
+    align-items: center;
+    background-color: #eef2f6;
+    border: 1px solid #c8d1df;
+    border-radius: 8px;
+    display: flex;
+    gap: 7px;
+    padding: 3px;
+}
+
+.random-controls label {
+    color: #172033;
+    font-size: 13px;
+    font-weight: 800;
+    padding-left: 7px;
+}
+
+.random-controls input {
+    border: 1px solid #c8d1df;
+    border-radius: 6px;
+    color: #172033;
+    font-size: 14px;
+    font-weight: 800;
+    padding: 8px 6px;
+    width: 58px;
+}
+
+.random-controls button {
+    background-color: #7c3aed;
+}
+
+.actions > button.secondary-action {
     background-color: #5a6475;
 }
 
@@ -86,17 +117,17 @@
     border: 1px solid #cfd8e6;
     border-radius: 8px;
     cursor: crosshair;
-    height: 58vh;
-    min-height: 420px;
+    height: var(--workspace-height);
     overflow: hidden;
     position: relative;
     width: 100%;
 }
 
 .workspace {
+    --workspace-height: 620px;
     display: grid;
     gap: 14px;
-    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 0.65fr);
 }
 
 .edge-layer {
@@ -176,7 +207,7 @@
     color: #172033;
     display: flex;
     flex-direction: column;
-    min-height: 420px;
+    height: var(--workspace-height);
     overflow: hidden;
 }
 
@@ -208,37 +239,37 @@
 .result-graph {
     background-color: #eef2f6;
     flex: 1;
-    min-height: 360px;
+    min-height: 0;
     width: 100%;
 }
 
 .result-edge {
     stroke: #13a86b;
     stroke-linecap: round;
-    stroke-width: 7;
+    stroke-width: 5;
 }
 
 .result-weight {
     fill: #08794c;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 900;
     paint-order: stroke;
     stroke: #eef2f6;
     stroke-linejoin: round;
-    stroke-width: 7px;
+    stroke-width: 6px;
     text-anchor: middle;
 }
 
 .result-node {
     fill: #ffffff;
     stroke: #2457c5;
-    stroke-width: 5;
+    stroke-width: 4;
 }
 
 .result-node-label {
     dominant-baseline: middle;
     fill: #172033;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 900;
     text-anchor: middle;
 }
