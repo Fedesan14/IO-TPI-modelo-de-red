@@ -1,23 +1,17 @@
-import logo from './logo.svg';
 import './App.css';
+import ContentPage from './pages/ContentPage';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Investigación Operativa - UTN FRVM</h1>
+        <h2>Trabajo Práctico Integrador</h2>
+        <h3>Modelo de red - Arbol de expansión mínimo</h3>
       </header>
+      <main className="App-content">
+        <ContentPage />
+      </main>
     </div>
   );
 }
