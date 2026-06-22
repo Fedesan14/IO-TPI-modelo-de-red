@@ -2,10 +2,16 @@ function GraphToolbar({
     nodes,
     edges,
     toolMode,
+    strategy,
+    sourceNodeId,
+    targetNodeId,
     randomNodeCount,
     onSelectToolMode,
+    onSelectStrategy,
+    onSourceNodeChange,
+    onTargetNodeChange,
     onRandomNodeCountChange,
-    onCalculateTree,
+    onCalculateResult,
     onClearGraph,
     onGenerateRandomGraph
 }) {
@@ -19,6 +25,43 @@ function GraphToolbar({
                 </span>
             </div>
             <div className='actions'>
+                <div className='strategy-controls'>
+                    <label htmlFor='strategy-select'>Estrategia</label>
+                    <select
+                        id='strategy-select'
+                        value={strategy}
+                        onChange={(event) => onSelectStrategy(event.target.value)}
+                    >
+                        <option value='prim'>Arbol minimo - Prim</option>
+                        <option value='dijkstra'>Ruta mas corta - Dijkstra</option>
+                    </select>
+                </div>
+                {strategy === 'dijkstra' && (
+                    <div className='path-controls'>
+                        <label htmlFor='source-node'>Origen</label>
+                        <select
+                            id='source-node'
+                            value={sourceNodeId}
+                            onChange={(event) => onSourceNodeChange(event.target.value)}
+                        >
+                            <option value=''>-</option>
+                            {nodes.map((node) => (
+                                <option key={node.id} value={node.id}>{node.id}</option>
+                            ))}
+                        </select>
+                        <label htmlFor='target-node'>Destino</label>
+                        <select
+                            id='target-node'
+                            value={targetNodeId}
+                            onChange={(event) => onTargetNodeChange(event.target.value)}
+                        >
+                            <option value=''>-</option>
+                            {nodes.map((node) => (
+                                <option key={node.id} value={node.id}>{node.id}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 <div className='tool-mode' aria-label='Modo de edicion'>
                     <button
                         type='button'
@@ -35,7 +78,7 @@ function GraphToolbar({
                         Mover nodos
                     </button>
                 </div>
-                <button type='button' onClick={onCalculateTree}>Calcular arbol</button>
+                <button type='button' onClick={onCalculateResult}>Calcular</button>
                 <button type='button' className='secondary-action' onClick={onClearGraph}>Limpiar grafo</button>
                 <div className='random-controls'>
                     <label htmlFor='random-node-count'>Nodos</label>

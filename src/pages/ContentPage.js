@@ -13,10 +13,16 @@ function ContentPage () {
                 nodes={graphEditor.nodes}
                 edges={graphEditor.edges}
                 toolMode={graphEditor.toolMode}
+                strategy={graphEditor.strategy}
+                sourceNodeId={graphEditor.sourceNodeId}
+                targetNodeId={graphEditor.targetNodeId}
                 randomNodeCount={graphEditor.randomNodeCount}
                 onSelectToolMode={graphEditor.selectToolMode}
+                onSelectStrategy={graphEditor.selectStrategy}
+                onSourceNodeChange={graphEditor.setSourceNodeId}
+                onTargetNodeChange={graphEditor.setTargetNodeId}
                 onRandomNodeCountChange={graphEditor.setRandomNodeCount}
-                onCalculateTree={graphEditor.calculateTree}
+                onCalculateResult={graphEditor.calculateResult}
                 onClearGraph={graphEditor.clearGraph}
                 onGenerateRandomGraph={graphEditor.generateRandomGraph}
             />
@@ -25,9 +31,10 @@ function ContentPage () {
                 graphRef={graphEditor.graphRef}
                 nodes={graphEditor.nodes}
                 edges={graphEditor.edges}
-                mstEdges={graphEditor.mstEdges}
-                mstEdgeIds={graphEditor.mstEdgeIds}
+                resultEdges={graphEditor.resultEdges}
+                resultEdgeIds={graphEditor.resultEdgeIds}
                 resultNodes={graphEditor.resultNodes}
+                strategy={graphEditor.strategy}
                 totalWeight={graphEditor.totalWeight}
                 dragStartNodeId={graphEditor.dragStartNodeId}
                 movingNodeId={graphEditor.movingNodeId}

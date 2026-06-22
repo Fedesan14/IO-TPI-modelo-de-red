@@ -7,7 +7,7 @@ function App() {
       <header className="App-header">
         <h1>Investigación Operativa - UTN FRVM</h1>
         <h2>Trabajo Práctico Integrador</h2>
-        <h3>Modelo de red - Arbol de expansión mínimo</h3>
+        <h3>Modelo de red</h3>
       </header>
       <main className="App-content">
         <ContentPage />

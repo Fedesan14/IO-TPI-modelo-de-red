@@ -5,9 +5,10 @@ function GraphWorkspace({
     graphRef,
     nodes,
     edges,
-    mstEdges,
-    mstEdgeIds,
+    resultEdges,
+    resultEdgeIds,
     resultNodes,
+    strategy,
     totalWeight,
     dragStartNodeId,
     movingNodeId,
@@ -26,7 +27,7 @@ function GraphWorkspace({
                 graphRef={graphRef}
                 nodes={nodes}
                 edges={edges}
-                mstEdgeIds={mstEdgeIds}
+                resultEdgeIds={resultEdgeIds}
                 dragStartNodeId={dragStartNodeId}
                 movingNodeId={movingNodeId}
                 previewPosition={previewPosition}
@@ -39,7 +40,8 @@ function GraphWorkspace({
             />
             <ResultTreePanel
                 resultNodes={resultNodes}
-                mstEdges={mstEdges}
+                resultEdges={resultEdges}
+                strategy={strategy}
                 totalWeight={totalWeight}
                 getResultNodeById={getResultNodeById}
             />

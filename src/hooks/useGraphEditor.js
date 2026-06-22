@@ -1,12 +1,15 @@
 import { useMemo, useRef, useState } from 'react';
-import { calculatePrim as runPrim } from '../utils/graphAlgorithms';
+import { calculateDijkstra, calculatePrim } from '../utils/graphAlgorithms';
 import { generateConnectedRandomGraph } from '../utils/randomGraph';
 
 export function useGraphEditor() {
     const graphRef = useRef(null);
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
-    const [mstEdges, setMstEdges] = useState([]);
+    const [resultEdges, setResultEdges] = useState([]);
+    const [strategy, setStrategy] = useState('prim');
+    const [sourceNodeId, setSourceNodeId] = useState('');
+    const [targetNodeId, setTargetNodeId] = useState('');
     const [toolMode, setToolMode] = useState('connect');
     const [dragStartNodeId, setDragStartNodeId] = useState(null);
     const [movingNodeId, setMovingNodeId] = useState(null);
@@ -15,7 +18,7 @@ export function useGraphEditor() {
     const [message, setMessage] = useState('Doble click para agregar nodos. Arrastra entre nodos para crear aristas.');
     const [totalWeight, setTotalWeight] = useState(null);
 
-    const mstEdgeIds = useMemo(() => new Set(mstEdges.map((edge) => edge.id)), [mstEdges]);
+    const resultEdgeIds = useMemo(() => new Set(resultEdges.map((edge) => edge.id)), [resultEdges]);
 
     const resultNodes = useMemo(() => {
         if (nodes.length === 0) {
@@ -56,7 +59,7 @@ export function useGraphEditor() {
     };
 
     const resetResult = () => {
-        setMstEdges([]);
+        setResultEdges([]);
         setTotalWeight(null);
     };
 
@@ -73,6 +76,12 @@ export function useGraphEditor() {
         };
 
         setNodes((currentNodes) => [...currentNodes, nextNode]);
+        if (nodes.length === 0) {
+            setSourceNodeId(nextNode.id);
+        }
+        if (nodes.length === 1) {
+            setTargetNodeId(nextNode.id);
+        }
         resetResult();
         setMessage(`Nodo ${nextNode.id} agregado.`);
     };
@@ -169,10 +178,12 @@ export function useGraphEditor() {
         setPreviewPosition(getPointerPosition(event));
     };
 
-    const calculateTree = () => {
-        const result = runPrim(nodes, edges);
+    const calculateResult = () => {
+        const result = strategy === 'prim'
+            ? calculatePrim(nodes, edges)
+            : calculateDijkstra(nodes, edges, Number(sourceNodeId), Number(targetNodeId));
 
-        setMstEdges(result.mstEdges);
+        setResultEdges(result.mstEdges || result.pathEdges || []);
         setTotalWeight(result.totalWeight);
         setMessage(result.error || result.message);
     };
@@ -180,12 +191,24 @@ export function useGraphEditor() {
     const clearGraph = () => {
         setNodes([]);
         setEdges([]);
-        setMstEdges([]);
+        setResultEdges([]);
         setDragStartNodeId(null);
         setMovingNodeId(null);
         setPreviewPosition(null);
+        setSourceNodeId('');
+        setTargetNodeId('');
         setTotalWeight(null);
         setMessage('Grafo limpio. Doble click para agregar nuevos nodos.');
+    };
+
+    const selectStrategy = (nextStrategy) => {
+        setStrategy(nextStrategy);
+        resetResult();
+        setMessage(
+            nextStrategy === 'prim'
+                ? 'Estrategia seleccionada: arbol de expansion minima con Prim.'
+                : 'Estrategia seleccionada: ruta mas corta con Dijkstra.'
+        );
     };
 
     const selectToolMode = (nextToolMode) => {
@@ -211,10 +234,12 @@ export function useGraphEditor() {
         setRandomNodeCount(nodeCount);
         setNodes(graph.nodes);
         setEdges(graph.edges);
-        setMstEdges([]);
+        setResultEdges([]);
         setDragStartNodeId(null);
         setMovingNodeId(null);
         setPreviewPosition(null);
+        setSourceNodeId(graph.nodes[0]?.id || '');
+        setTargetNodeId(graph.nodes[graph.nodes.length - 1]?.id || '');
         setTotalWeight(null);
         setMessage(`Grafo aleatorio conectado generado con ${nodeCount} nodos y ${graph.edges.length} aristas.`);
     };
@@ -223,9 +248,12 @@ export function useGraphEditor() {
         graphRef,
         nodes,
         edges,
-        mstEdges,
-        mstEdgeIds,
+        resultEdges,
+        resultEdgeIds,
         resultNodes,
+        strategy,
+        sourceNodeId,
+        targetNodeId,
         toolMode,
         dragStartNodeId,
         movingNodeId,
@@ -234,6 +262,8 @@ export function useGraphEditor() {
         message,
         totalWeight,
         setRandomNodeCount,
+        setSourceNodeId,
+        setTargetNodeId,
         getNodeById,
         getResultNodeById,
         handleDoubleClick,
@@ -241,8 +271,9 @@ export function useGraphEditor() {
         handleNodeMouseUp,
         handleMouseUp,
         handleMouseMove,
-        calculateTree,
+        calculateResult,
         clearGraph,
+        selectStrategy,
         selectToolMode,
         generateRandomGraph
     };

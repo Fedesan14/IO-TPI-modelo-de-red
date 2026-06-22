@@ -2,7 +2,7 @@ function GraphCanvas({
     graphRef,
     nodes,
     edges,
-    mstEdgeIds,
+    resultEdgeIds,
     dragStartNodeId,
     movingNodeId,
     previewPosition,
@@ -34,7 +34,7 @@ function GraphCanvas({
 
                     const middleX = (fromNode.x + toNode.x) / 2;
                     const middleY = (fromNode.y + toNode.y) / 2;
-                    const isMstEdge = mstEdgeIds.has(edge.id);
+                    const isResultEdge = resultEdgeIds.has(edge.id);
 
                     return (
                         <g key={edge.id}>
@@ -43,12 +43,12 @@ function GraphCanvas({
                                 y1={fromNode.y}
                                 x2={toNode.x}
                                 y2={toNode.y}
-                                className={isMstEdge ? 'edge mst-edge' : 'edge'}
+                                className={isResultEdge ? 'edge mst-edge' : 'edge'}
                             />
                             <text
                                 x={middleX}
                                 y={middleY}
-                                className={isMstEdge ? 'edge-weight mst-weight' : 'edge-weight'}
+                                className={isResultEdge ? 'edge-weight mst-weight' : 'edge-weight'}
                             >
                                 {edge.weight}
                             </text>

@@ -1,23 +1,29 @@
 function ResultTreePanel({
     resultNodes,
-    mstEdges,
+    resultEdges,
+    strategy,
     totalWeight,
     getResultNodeById
 }) {
+    const title = strategy === 'prim' ? 'Arbol resultado' : 'Ruta resultado';
+    const emptyMessage = strategy === 'prim'
+        ? 'Calcula el arbol para ver el resultado.'
+        : 'Calcula la ruta para ver el resultado.';
+
     return (
         <aside className='result-panel'>
             <div className='result-header'>
-                <strong>Arbol resultado</strong>
+                <strong>{title}</strong>
                 {totalWeight !== null && <span>Peso: {totalWeight}</span>}
             </div>
 
             {totalWeight === null ? (
                 <div className='empty-result'>
-                    Calcula el arbol para ver el resultado.
+                    {emptyMessage}
                 </div>
             ) : (
                 <svg className='result-graph' viewBox='0 0 320 320' preserveAspectRatio='xMidYMid meet'>
-                    {mstEdges.map((edge) => {
+                    {resultEdges.map((edge) => {
                         const fromNode = getResultNodeById(edge.from);
                         const toNode = getResultNodeById(edge.to);
 
