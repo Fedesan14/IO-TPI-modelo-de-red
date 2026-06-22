@@ -3,6 +3,7 @@ function GraphCanvas({
     nodes,
     edges,
     resultEdgeIds,
+    selectedNodeId,
     dragStartNodeId,
     movingNodeId,
     previewPosition,
@@ -11,7 +12,8 @@ function GraphCanvas({
     onMouseMove,
     onMouseUp,
     onNodeMouseDown,
-    onNodeMouseUp
+    onNodeMouseUp,
+    onEdgeDoubleClick
 }) {
     const previewStartNode = dragStartNodeId ? getNodeById(dragStartNodeId) : null;
 
@@ -43,12 +45,27 @@ function GraphCanvas({
                                 y1={fromNode.y}
                                 x2={toNode.x}
                                 y2={toNode.y}
+                                className='edge-hitbox'
+                                onDoubleClick={(event) => {
+                                    event.stopPropagation();
+                                    onEdgeDoubleClick(edge.id);
+                                }}
+                            />
+                            <line
+                                x1={fromNode.x}
+                                y1={fromNode.y}
+                                x2={toNode.x}
+                                y2={toNode.y}
                                 className={isResultEdge ? 'edge mst-edge' : 'edge'}
                             />
                             <text
                                 x={middleX}
                                 y={middleY}
                                 className={isResultEdge ? 'edge-weight mst-weight' : 'edge-weight'}
+                                onDoubleClick={(event) => {
+                                    event.stopPropagation();
+                                    onEdgeDoubleClick(edge.id);
+                                }}
                             >
                                 {edge.weight}
                             </text>
@@ -72,6 +89,7 @@ function GraphCanvas({
                     type='button'
                     className={
                         dragStartNodeId === node.id || movingNodeId === node.id
+                            || selectedNodeId === node.id
                             ? 'node selected-node'
                             : 'node'
                     }

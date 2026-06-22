@@ -10,6 +10,7 @@ function GraphWorkspace({
     resultNodes,
     strategy,
     totalWeight,
+    selectedNodeId,
     dragStartNodeId,
     movingNodeId,
     previewPosition,
@@ -19,7 +20,8 @@ function GraphWorkspace({
     onMouseMove,
     onMouseUp,
     onNodeMouseDown,
-    onNodeMouseUp
+    onNodeMouseUp,
+    onEdgeDoubleClick
 }) {
     return (
         <div className='workspace'>
@@ -28,6 +30,7 @@ function GraphWorkspace({
                 nodes={nodes}
                 edges={edges}
                 resultEdgeIds={resultEdgeIds}
+                selectedNodeId={selectedNodeId}
                 dragStartNodeId={dragStartNodeId}
                 movingNodeId={movingNodeId}
                 previewPosition={previewPosition}
@@ -37,6 +40,7 @@ function GraphWorkspace({
                 onMouseUp={onMouseUp}
                 onNodeMouseDown={onNodeMouseDown}
                 onNodeMouseUp={onNodeMouseUp}
+                onEdgeDoubleClick={onEdgeDoubleClick}
             />
             <ResultTreePanel
                 resultNodes={resultNodes}

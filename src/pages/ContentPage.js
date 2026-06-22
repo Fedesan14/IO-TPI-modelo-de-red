@@ -36,6 +36,7 @@ function ContentPage () {
                 resultNodes={graphEditor.resultNodes}
                 strategy={graphEditor.strategy}
                 totalWeight={graphEditor.totalWeight}
+                selectedNodeId={graphEditor.selectedNodeId}
                 dragStartNodeId={graphEditor.dragStartNodeId}
                 movingNodeId={graphEditor.movingNodeId}
                 previewPosition={graphEditor.previewPosition}
@@ -46,6 +47,7 @@ function ContentPage () {
                 onMouseUp={graphEditor.handleMouseUp}
                 onNodeMouseDown={graphEditor.handleNodeMouseDown}
                 onNodeMouseUp={graphEditor.handleNodeMouseUp}
+                onEdgeDoubleClick={graphEditor.updateEdgeWeight}
             />
 
             <StatusBar
