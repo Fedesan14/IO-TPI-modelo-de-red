@@ -31,10 +31,20 @@
 }
 
 .actions {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     justify-content: flex-end;
+}
+
+.tool-mode {
+    background-color: #dfe5ee;
+    border: 1px solid #c8d1df;
+    border-radius: 8px;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
 }
 
 .actions button {
@@ -48,7 +58,18 @@
     padding: 10px 14px;
 }
 
-.actions button:last-child {
+.tool-mode button {
+    background-color: transparent;
+    color: #172033;
+}
+
+.tool-mode button.active-tool {
+    background-color: #ffffff;
+    box-shadow: 0 1px 4px rgba(23, 32, 51, 0.15);
+    color: #2457c5;
+}
+
+.actions > button:last-child {
     background-color: #5a6475;
 }
 
@@ -91,6 +112,13 @@
     stroke-width: 5;
 }
 
+.preview-edge {
+    stroke: #2457c5;
+    stroke-dasharray: 8 7;
+    stroke-linecap: round;
+    stroke-width: 3;
+}
+
 .edge-weight {
     fill: #172033;
     font-size: 15px;
@@ -113,7 +141,7 @@
     border-radius: 50%;
     box-shadow: 0 6px 16px rgba(23, 32, 51, 0.18);
     color: #172033;
-    cursor: grab;
+    cursor: pointer;
     display: flex;
     font-size: 16px;
     font-weight: 800;

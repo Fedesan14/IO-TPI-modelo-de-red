@@ -6,7 +6,10 @@ function ContentPage () {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [mstEdges, setMstEdges] = useState([]);
+    const [toolMode, setToolMode] = useState('connect');
     const [dragStartNodeId, setDragStartNodeId] = useState(null);
+    const [movingNodeId, setMovingNodeId] = useState(null);
+    const [previewPosition, setPreviewPosition] = useState(null);
     const [message, setMessage] = useState('Doble click para agregar nodos. Arrastra entre nodos para crear aristas.');
     const [totalWeight, setTotalWeight] = useState(null);
 
@@ -40,14 +43,29 @@ function ContentPage () {
 
     const handleNodeMouseDown = (nodeId, event) => {
         event.stopPropagation();
+
+        if (toolMode === 'move') {
+            setMovingNodeId(nodeId);
+            setMessage(`Moviendo nodo ${nodeId}.`);
+            return;
+        }
+
         setDragStartNodeId(nodeId);
+        setPreviewPosition(getPointerPosition(event));
     };
 
     const handleNodeMouseUp = (targetNodeId, event) => {
         event.stopPropagation();
 
+        if (toolMode === 'move') {
+            setMovingNodeId(null);
+            setMessage(`Nodo ${targetNodeId} reubicado.`);
+            return;
+        }
+
         if (!dragStartNodeId || dragStartNodeId === targetNodeId) {
             setDragStartNodeId(null);
+            setPreviewPosition(null);
             return;
         }
 
@@ -61,6 +79,7 @@ function ContentPage () {
         if (edgeAlreadyExists) {
             setMessage('Ya existe una arista entre esos nodos.');
             setDragStartNodeId(null);
+            setPreviewPosition(null);
             return;
         }
 
@@ -70,6 +89,7 @@ function ContentPage () {
         if (!weightInput || Number.isNaN(weight) || weight <= 0) {
             setMessage('La arista no se creo porque el peso debe ser un numero positivo.');
             setDragStartNodeId(null);
+            setPreviewPosition(null);
             return;
         }
 
@@ -85,10 +105,33 @@ function ContentPage () {
         setTotalWeight(null);
         setMessage(`Arista ${dragStartNodeId} - ${targetNodeId} creada con peso ${weight}.`);
         setDragStartNodeId(null);
+        setPreviewPosition(null);
     };
 
     const handleMouseUp = () => {
         setDragStartNodeId(null);
+        setMovingNodeId(null);
+        setPreviewPosition(null);
+    };
+
+    const handleMouseMove = (event) => {
+        if (movingNodeId) {
+            const position = getPointerPosition(event);
+            setNodes((currentNodes) => (
+                currentNodes.map((node) => (
+                    node.id === movingNodeId
+                        ? { ...node, x: position.x, y: position.y }
+                        : node
+                ))
+            ));
+            return;
+        }
+
+        if (!dragStartNodeId) {
+            return;
+        }
+
+        setPreviewPosition(getPointerPosition(event));
     };
 
     const getNodeById = (nodeId) => {
@@ -144,9 +187,13 @@ function ContentPage () {
         setEdges([]);
         setMstEdges([]);
         setDragStartNodeId(null);
+        setMovingNodeId(null);
+        setPreviewPosition(null);
         setTotalWeight(null);
         setMessage('Grafo limpio. Doble click para agregar nuevos nodos.');
     };
+
+    const previewStartNode = dragStartNodeId ? getNodeById(dragStartNodeId) : null;
     
     return (
         <div className='content-page'>
@@ -159,6 +206,34 @@ function ContentPage () {
                     </span>
                 </div>
                 <div className='actions'>
+                    <div className='tool-mode' aria-label='Modo de edicion'>
+                        <button
+                            type='button'
+                            className={toolMode === 'connect' ? 'active-tool' : ''}
+                            onClick={() => {
+                                setToolMode('connect');
+                                setDragStartNodeId(null);
+                                setMovingNodeId(null);
+                                setPreviewPosition(null);
+                                setMessage('Modo crear aristas: arrastra desde un nodo hasta otro.');
+                            }}
+                        >
+                            Crear aristas
+                        </button>
+                        <button
+                            type='button'
+                            className={toolMode === 'move' ? 'active-tool' : ''}
+                            onClick={() => {
+                                setToolMode('move');
+                                setDragStartNodeId(null);
+                                setMovingNodeId(null);
+                                setPreviewPosition(null);
+                                setMessage('Modo mover nodos: arrastra un nodo para reubicarlo.');
+                            }}
+                        >
+                            Mover nodos
+                        </button>
+                    </div>
                     <button type='button' onClick={calculatePrim}>Calcular arbol</button>
                     <button type='button' onClick={clearGraph}>Limpiar grafo</button>
                 </div>
@@ -167,6 +242,7 @@ function ContentPage () {
             <div
                 ref={graphRef}
                 onDoubleClick={handleDoubleClick}
+                onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 className='background'
             >
@@ -202,13 +278,26 @@ function ContentPage () {
                             </g>
                         );
                     })}
+                    {previewStartNode && previewPosition && (
+                        <line
+                            x1={previewStartNode.x}
+                            y1={previewStartNode.y}
+                            x2={previewPosition.x}
+                            y2={previewPosition.y}
+                            className='preview-edge'
+                        />
+                    )}
                 </svg>
 
                 {nodes.map((node) => (
                     <button
                         key={node.id}
                         type='button'
-                        className={dragStartNodeId === node.id ? 'node selected-node' : 'node'}
+                        className={
+                            dragStartNodeId === node.id || movingNodeId === node.id
+                                ? 'node selected-node'
+                                : 'node'
+                        }
                         style={{ left: node.x, top: node.y }}
                         onMouseDown={(event) => handleNodeMouseDown(node.id, event)}
                         onMouseUp={(event) => handleNodeMouseUp(node.id, event)}
