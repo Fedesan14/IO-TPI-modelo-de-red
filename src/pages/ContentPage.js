@@ -1,3 +1,4 @@
+import CalculationStepsPanel from '../components/graph/CalculationStepsPanel';
 import GraphToolbar from '../components/graph/GraphToolbar';
 import GraphWorkspace from '../components/graph/GraphWorkspace';
 import ErrorToast from '../components/graph/ErrorToast';
@@ -58,6 +59,11 @@ function ContentPage () {
             <ModelPanel
                 nodes={graphEditor.nodes}
                 edges={graphEditor.edges}
+            />
+
+            <CalculationStepsPanel
+                steps={graphEditor.calculationSteps}
+                strategy={graphEditor.strategy}
             />
 
             <ErrorToast

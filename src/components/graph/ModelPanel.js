@@ -10,7 +10,7 @@ function ModelPanel({ nodes, edges }) {
         <section className='model-panel' aria-label='Modelo del grafo'>
             <div>
                 <h3>Modelo (N, A)</h3>
-                <span>{nodes.length} nodos · {edges.length} aristas</span>
+                <span>{nodes.length} nodos - {edges.length} aristas</span>
             </div>
             <div className='model-sets'>
                 <p>

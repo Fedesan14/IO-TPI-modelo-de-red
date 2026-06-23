@@ -13,6 +13,7 @@ export function useGraphEditor() {
     const [resultEdges, setResultEdges] = useState([]);
     const [resultNodeIds, setResultNodeIds] = useState([]);
     const [resultText, setResultText] = useState('');
+    const [calculationSteps, setCalculationSteps] = useState([]);
     const [strategy, setStrategy] = useState('prim');
     const [sourceNodeId, setSourceNodeId] = useState('');
     const [targetNodeId, setTargetNodeId] = useState('');
@@ -149,6 +150,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setCalculationSteps([]);
         setTotalWeight(null);
     };
 
@@ -310,6 +312,7 @@ export function useGraphEditor() {
         setResultEdges(result.mstEdges || result.pathEdges || []);
         setResultNodeIds(result.resultNodeIds || []);
         setResultText(result.resultText || '');
+        setCalculationSteps(result.calculationSteps || []);
         setTotalWeight(result.totalWeight);
         setMessage(result.message || '');
 
@@ -358,6 +361,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setCalculationSteps([]);
         setSelectedNodeId(null);
         setMovingNodeId(null);
         setDragStartNodeId(null);
@@ -424,6 +428,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setCalculationSteps([]);
         setSelectedNodeId(null);
         setDragStartNodeId(null);
         setMovingNodeId(null);
@@ -474,6 +479,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setCalculationSteps([]);
         setSelectedNodeId(null);
         setDragStartNodeId(null);
         setMovingNodeId(null);
@@ -493,6 +499,7 @@ export function useGraphEditor() {
         resultEdgeIds,
         resultNodes,
         resultText,
+        calculationSteps,
         strategy,
         sourceNodeId,
         targetNodeId,

@@ -1,3 +1,25 @@
+function formatSet(values) {
+    return `{${values.join(', ')}}`;
+}
+
+function formatDistance(value) {
+    return value === Infinity ? 'infinito' : value;
+}
+
+function formatLabels(nodeIds, distances, previousNode) {
+    if (nodeIds.length === 0) {
+        return '{}';
+    }
+
+    return nodeIds
+        .map((nodeId) => {
+            const previous = previousNode.get(nodeId);
+            const previousText = previous ? `, anterior ${previous}` : '';
+            return `${nodeId}: ${formatDistance(distances.get(nodeId))}${previousText}`;
+        })
+        .join(' | ');
+}
+
 export function calculatePrim(nodes, edges) {
     if (nodes.length === 0) {
         return {
@@ -14,6 +36,13 @@ export function calculatePrim(nodes, edges) {
             mstEdges: [],
             resultNodeIds: [nodes[0].id],
             resultText: `Nodo: ${nodes[0].id}`,
+            calculationSteps: [{
+                title: 'Inicio',
+                details: [
+                    `El grafo tiene un solo nodo: ${nodes[0].id}.`,
+                    'No es necesario elegir aristas. Peso total: 0.'
+                ]
+            }],
             totalWeight: 0,
             message: 'El arbol de un solo nodo tiene peso total 0.'
         };
@@ -21,6 +50,14 @@ export function calculatePrim(nodes, edges) {
 
     const visited = new Set([nodes[0].id]);
     const selectedEdges = [];
+    const calculationSteps = [{
+        title: 'Inicio',
+        details: [
+            `Se elige el nodo ${nodes[0].id} como nodo inicial.`,
+            `Nodos conectados: ${formatSet([...visited])}.`,
+            `Nodos no conectados: ${formatSet(nodes.filter((node) => !visited.has(node.id)).map((node) => node.id))}.`
+        ]
+    }];
 
     while (visited.size < nodes.length) {
         const candidateEdges = edges
@@ -42,8 +79,25 @@ export function calculatePrim(nodes, edges) {
         }
 
         const nextEdge = candidateEdges[0];
+        const nextNodeId = visited.has(nextEdge.from) ? nextEdge.to : nextEdge.from;
+        const connectedBefore = [...visited];
+        const disconnectedBefore = nodes
+            .filter((node) => !visited.has(node.id))
+            .map((node) => node.id);
+
         selectedEdges.push(nextEdge);
-        visited.add(visited.has(nextEdge.from) ? nextEdge.to : nextEdge.from);
+        visited.add(nextNodeId);
+
+        calculationSteps.push({
+            title: `Paso ${selectedEdges.length}`,
+            details: [
+                `Nodos conectados antes de elegir: ${formatSet(connectedBefore)}.`,
+                `Nodos no conectados antes de elegir: ${formatSet(disconnectedBefore)}.`,
+                `Aristas candidatas: ${candidateEdges.map((edge) => `(${edge.from}, ${edge.to}, peso ${edge.weight})`).join(' ; ')}.`,
+                `Se elige la arista (${nextEdge.from}, ${nextEdge.to}) porque tiene el menor peso disponible: ${nextEdge.weight}.`,
+                `Se incorpora el nodo ${nextNodeId}. Nodos conectados ahora: ${formatSet([...visited])}.`
+            ]
+        });
     }
 
     const totalWeight = selectedEdges.reduce((sum, edge) => sum + edge.weight, 0);
@@ -56,6 +110,7 @@ export function calculatePrim(nodes, edges) {
         mstEdges: selectedEdges,
         resultNodeIds,
         resultText,
+        calculationSteps,
         totalWeight,
         message: `Arbol de expansion minima calculado con Prim. Peso total: ${totalWeight}.`
     };
@@ -87,6 +142,13 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
             pathEdges: [],
             resultNodeIds: [sourceNodeId],
             resultText: `Ruta: ${sourceNodeId}`,
+            calculationSteps: [{
+                title: 'Inicio',
+                details: [
+                    `El origen y el destino son el mismo nodo: ${sourceNodeId}.`,
+                    'La etiqueta permanente del origen es 0. Distancia total: 0.'
+                ]
+            }],
             totalWeight: 0,
             message: 'El origen y destino son el mismo nodo. Distancia total: 0.'
         };
@@ -96,8 +158,19 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
     const previousNode = new Map();
     const previousEdge = new Map();
     const unvisited = new Set(nodes.map((node) => node.id));
+    const permanentLabels = new Set();
+    const calculationSteps = [];
+    const nodeIds = nodes.map((node) => node.id);
 
     distances.set(sourceNodeId, 0);
+    calculationSteps.push({
+        title: 'Inicio',
+        details: [
+            `Etiqueta inicial del origen ${sourceNodeId}: 0.`,
+            `Etiquetas no permanentes: ${formatLabels(nodeIds, distances, previousNode)}.`,
+            'Etiquetas permanentes: {}.'
+        ]
+    });
 
     while (unvisited.size > 0) {
         const currentNodeId = [...unvisited].sort((firstNodeId, secondNodeId) => (
@@ -109,14 +182,27 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
         }
 
         if (currentNodeId === targetNodeId) {
+            permanentLabels.add(currentNodeId);
+            unvisited.delete(currentNodeId);
+            calculationSteps.push({
+                title: `Paso ${calculationSteps.length}`,
+                details: [
+                    `Se selecciona el nodo ${currentNodeId} con etiqueta menor (${formatDistance(distances.get(currentNodeId))}) y se vuelve permanente.`,
+                    `Como ${currentNodeId} es el destino, el algoritmo termina.`,
+                    `Etiquetas permanentes: ${formatLabels([...permanentLabels], distances, previousNode)}.`,
+                    `Etiquetas no permanentes: ${formatLabels([...unvisited], distances, previousNode)}.`
+                ]
+            });
             break;
         }
 
         unvisited.delete(currentNodeId);
+        permanentLabels.add(currentNodeId);
 
         const connectedEdges = edges.filter((edge) => (
             edge.from === currentNodeId || edge.to === currentNodeId
         ));
+        const updates = [];
 
         connectedEdges.forEach((edge) => {
             const neighborNodeId = edge.from === currentNodeId ? edge.to : edge.from;
@@ -128,10 +214,25 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
             const nextDistance = distances.get(currentNodeId) + edge.weight;
 
             if (nextDistance < distances.get(neighborNodeId)) {
+                const previousDistance = distances.get(neighborNodeId);
                 distances.set(neighborNodeId, nextDistance);
                 previousNode.set(neighborNodeId, currentNodeId);
                 previousEdge.set(neighborNodeId, edge);
+                updates.push(
+                    `Nodo ${neighborNodeId}: ${formatDistance(previousDistance)} -> ${nextDistance} por (${edge.from}, ${edge.to}).`
+                );
             }
+        });
+
+        calculationSteps.push({
+            title: `Paso ${calculationSteps.length}`,
+            details: [
+                `Se selecciona el nodo ${currentNodeId} con etiqueta menor (${formatDistance(distances.get(currentNodeId))}) y se vuelve permanente.`,
+                `Aristas revisadas: ${connectedEdges.length ? connectedEdges.map((edge) => `(${edge.from}, ${edge.to}, peso ${edge.weight})`).join(' ; ') : 'ninguna'}.`,
+                updates.length ? `Actualizaciones: ${updates.join(' ')}` : 'No se actualiza ninguna etiqueta.',
+                `Etiquetas permanentes: ${formatLabels([...permanentLabels], distances, previousNode)}.`,
+                `Etiquetas no permanentes: ${formatLabels([...unvisited], distances, previousNode)}.`
+            ]
         });
     }
 
@@ -177,6 +278,7 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
         pathEdges,
         resultNodeIds,
         resultText: `Ruta: ${resultNodeIds.join(' -> ')}`,
+        calculationSteps,
         totalWeight,
         message: `Ruta mas corta calculada con Dijkstra. Distancia total: ${totalWeight}.`
     };
