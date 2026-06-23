@@ -6,6 +6,10 @@ export const bookGraphOptions = [
     {
         id: 'resolvedProblem11-1',
         label: 'Problema resuelto 11-1'
+    },
+    {
+        id: 'dijkstraSlidesExercise',
+        label: 'Dijkstra - Catedra IO'
     }
 ];
 
@@ -81,6 +85,32 @@ const bookGraphDefinitions = {
             [5, 8, 13],
             [6, 8, 9],
             [8, 7, 14]
+        ]
+    },
+    dijkstraSlidesExercise: {
+        name: 'Ejercicio del algoritmo de Dijkstra',
+        reference: {
+            book: 'Diapositiva Modelo de Red',
+            author: 'Catedra Investigacion Operativa UTN FRVM',
+            page: 11,
+            exercise: 'Ejercicio del algoritmo de Dijkstra'
+        },
+        nodes: [
+            { id: 1, x: 0.12, y: 0.42 },
+            { id: 2, x: 0.34, y: 0.22 },
+            { id: 3, x: 0.34, y: 0.62 },
+            { id: 4, x: 0.58, y: 0.18 },
+            { id: 5, x: 0.58, y: 0.46 },
+            { id: 6, x: 0.84, y: 0.34 }
+        ],
+        edges: [
+            [1, 2, 4],
+            [1, 3, 3],
+            [2, 5, 2],
+            [3, 5, 3],
+            [2, 4, 3],
+            [4, 6, 2],
+            [5, 6, 2]
         ]
     }
 };
