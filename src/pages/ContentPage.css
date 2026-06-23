@@ -273,6 +273,17 @@
     font-weight: 800;
 }
 
+.result-summary {
+    background-color: #ffffff;
+    border-bottom: 1px solid #d9e0ec;
+    color: #172033;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.35;
+    padding: 10px 14px;
+    overflow-wrap: anywhere;
+}
+
 .empty-result {
     align-items: center;
     color: #5a6475;

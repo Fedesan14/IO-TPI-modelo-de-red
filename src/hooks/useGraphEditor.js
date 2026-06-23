@@ -7,6 +7,8 @@ export function useGraphEditor() {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [resultEdges, setResultEdges] = useState([]);
+    const [resultNodeIds, setResultNodeIds] = useState([]);
+    const [resultText, setResultText] = useState('');
     const [strategy, setStrategy] = useState('prim');
     const [sourceNodeId, setSourceNodeId] = useState('');
     const [targetNodeId, setTargetNodeId] = useState('');
@@ -22,26 +24,36 @@ export function useGraphEditor() {
     const resultEdgeIds = useMemo(() => new Set(resultEdges.map((edge) => edge.id)), [resultEdges]);
 
     const resultNodes = useMemo(() => {
-        if (nodes.length === 0) {
+        const solutionNodes = nodes.filter((node) => resultNodeIds.includes(node.id));
+
+        if (solutionNodes.length === 0) {
             return [];
+        }
+
+        if (solutionNodes.length === 1) {
+            return [{
+                ...solutionNodes[0],
+                resultX: 160,
+                resultY: 160
+            }];
         }
 
         const resultSize = 320;
         const padding = 46;
-        const nodeXs = nodes.map((node) => node.x);
-        const nodeYs = nodes.map((node) => node.y);
+        const nodeXs = solutionNodes.map((node) => node.x);
+        const nodeYs = solutionNodes.map((node) => node.y);
         const minX = Math.min(...nodeXs);
         const minY = Math.min(...nodeYs);
         const width = Math.max(Math.max(...nodeXs) - minX, 1);
         const height = Math.max(Math.max(...nodeYs) - minY, 1);
         const drawableSize = resultSize - padding * 2;
 
-        return nodes.map((node) => ({
+        return solutionNodes.map((node) => ({
             ...node,
             resultX: padding + ((node.x - minX) / width) * drawableSize,
             resultY: padding + ((node.y - minY) / height) * drawableSize
         }));
-    }, [nodes]);
+    }, [nodes, resultNodeIds]);
 
     const getPointerPosition = (event) => {
         const rect = graphRef.current.getBoundingClientRect();
@@ -61,6 +73,8 @@ export function useGraphEditor() {
 
     const resetResult = () => {
         setResultEdges([]);
+        setResultNodeIds([]);
+        setResultText('');
         setTotalWeight(null);
     };
 
@@ -186,6 +200,8 @@ export function useGraphEditor() {
             : calculateDijkstra(nodes, edges, Number(sourceNodeId), Number(targetNodeId));
 
         setResultEdges(result.mstEdges || result.pathEdges || []);
+        setResultNodeIds(result.resultNodeIds || []);
+        setResultText(result.resultText || '');
         setTotalWeight(result.totalWeight);
         setMessage(result.error || result.message);
     };
@@ -225,6 +241,8 @@ export function useGraphEditor() {
             currentEdges.filter((edge) => edge.from !== nodeId && edge.to !== nodeId)
         ));
         setResultEdges([]);
+        setResultNodeIds([]);
+        setResultText('');
         setSelectedNodeId(null);
         setMovingNodeId(null);
         setDragStartNodeId(null);
@@ -264,6 +282,8 @@ export function useGraphEditor() {
         setNodes([]);
         setEdges([]);
         setResultEdges([]);
+        setResultNodeIds([]);
+        setResultText('');
         setSelectedNodeId(null);
         setDragStartNodeId(null);
         setMovingNodeId(null);
@@ -309,6 +329,8 @@ export function useGraphEditor() {
         setNodes(graph.nodes);
         setEdges(graph.edges);
         setResultEdges([]);
+        setResultNodeIds([]);
+        setResultText('');
         setSelectedNodeId(null);
         setDragStartNodeId(null);
         setMovingNodeId(null);
@@ -326,6 +348,7 @@ export function useGraphEditor() {
         resultEdges,
         resultEdgeIds,
         resultNodes,
+        resultText,
         strategy,
         sourceNodeId,
         targetNodeId,

@@ -34,6 +34,7 @@ function ContentPage () {
                 resultEdges={graphEditor.resultEdges}
                 resultEdgeIds={graphEditor.resultEdgeIds}
                 resultNodes={graphEditor.resultNodes}
+                resultText={graphEditor.resultText}
                 strategy={graphEditor.strategy}
                 totalWeight={graphEditor.totalWeight}
                 selectedNodeId={graphEditor.selectedNodeId}

@@ -2,6 +2,8 @@ export function calculatePrim(nodes, edges) {
     if (nodes.length === 0) {
         return {
             mstEdges: [],
+            resultNodeIds: [],
+            resultText: '',
             totalWeight: null,
             error: 'Agrega nodos antes de calcular el arbol.'
         };
@@ -10,6 +12,8 @@ export function calculatePrim(nodes, edges) {
     if (nodes.length === 1) {
         return {
             mstEdges: [],
+            resultNodeIds: [nodes[0].id],
+            resultText: `Nodo: ${nodes[0].id}`,
             totalWeight: 0,
             message: 'El arbol de un solo nodo tiene peso total 0.'
         };
@@ -30,6 +34,8 @@ export function calculatePrim(nodes, edges) {
         if (candidateEdges.length === 0) {
             return {
                 mstEdges: [],
+                resultNodeIds: [],
+                resultText: '',
                 totalWeight: null,
                 error: 'No se puede calcular: el grafo no esta conectado.'
             };
@@ -41,9 +47,15 @@ export function calculatePrim(nodes, edges) {
     }
 
     const totalWeight = selectedEdges.reduce((sum, edge) => sum + edge.weight, 0);
+    const resultNodeIds = [...new Set(selectedEdges.flatMap((edge) => [edge.from, edge.to]))];
+    const resultText = `Aristas: ${selectedEdges
+        .map((edge) => `(${edge.from}, ${edge.to})`)
+        .join(' - ')}`;
 
     return {
         mstEdges: selectedEdges,
+        resultNodeIds,
+        resultText,
         totalWeight,
         message: `Arbol de expansion minima calculado con Prim. Peso total: ${totalWeight}.`
     };
@@ -53,6 +65,8 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
     if (nodes.length === 0) {
         return {
             pathEdges: [],
+            resultNodeIds: [],
+            resultText: '',
             totalWeight: null,
             error: 'Agrega nodos antes de calcular la ruta mas corta.'
         };
@@ -61,6 +75,8 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
     if (!sourceNodeId || !targetNodeId) {
         return {
             pathEdges: [],
+            resultNodeIds: [],
+            resultText: '',
             totalWeight: null,
             error: 'Selecciona un nodo origen y un nodo destino.'
         };
@@ -69,6 +85,8 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
     if (sourceNodeId === targetNodeId) {
         return {
             pathEdges: [],
+            resultNodeIds: [sourceNodeId],
+            resultText: `Ruta: ${sourceNodeId}`,
             totalWeight: 0,
             message: 'El origen y destino son el mismo nodo. Distancia total: 0.'
         };
@@ -120,6 +138,8 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
     if (distances.get(targetNodeId) === Infinity) {
         return {
             pathEdges: [],
+            resultNodeIds: [],
+            resultText: '',
             totalWeight: null,
             error: 'No existe una ruta entre el nodo origen y el nodo destino.'
         };
@@ -134,6 +154,8 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
         if (!edge) {
             return {
                 pathEdges: [],
+                resultNodeIds: [],
+                resultText: '',
                 totalWeight: null,
                 error: 'No existe una ruta entre el nodo origen y el nodo destino.'
             };
@@ -144,9 +166,17 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
     }
 
     const totalWeight = distances.get(targetNodeId);
+    const resultNodeIds = [sourceNodeId];
+
+    pathEdges.forEach((edge) => {
+        const previousPathNodeId = resultNodeIds[resultNodeIds.length - 1];
+        resultNodeIds.push(edge.from === previousPathNodeId ? edge.to : edge.from);
+    });
 
     return {
         pathEdges,
+        resultNodeIds,
+        resultText: `Ruta: ${resultNodeIds.join(' -> ')}`,
         totalWeight,
         message: `Ruta mas corta calculada con Dijkstra. Distancia total: ${totalWeight}.`
     };

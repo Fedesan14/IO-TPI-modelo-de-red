@@ -1,6 +1,7 @@
 function ResultTreePanel({
     resultNodes,
     resultEdges,
+    resultText,
     strategy,
     totalWeight,
     getResultNodeById
@@ -16,6 +17,11 @@ function ResultTreePanel({
                 <strong>{title}</strong>
                 {totalWeight !== null && <span>Peso: {totalWeight}</span>}
             </div>
+            {totalWeight !== null && resultText && (
+                <div className='result-summary'>
+                    {resultText}
+                </div>
+            )}
 
             {totalWeight === null ? (
                 <div className='empty-result'>
