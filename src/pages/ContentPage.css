@@ -7,10 +7,10 @@
 
 .toolbar {
     align-items: flex-start;
-    background-color: #f5f7fb;
-    border: 1px solid #d9e0ec;
+    background-color: var(--utn-surface-soft);
+    border: 1px solid var(--utn-border);
     border-radius: 8px;
-    color: #172033;
+    color: var(--utn-text);
     display: flex;
     justify-content: space-between;
     gap: 16px;
@@ -34,8 +34,8 @@
 }
 
 .tool-mode {
-    background-color: #dfe5ee;
-    border: 1px solid #c8d1df;
+    background-color: var(--utn-grid);
+    border: 1px solid var(--utn-border);
     border-radius: 8px;
     display: flex;
     gap: 2px;
@@ -45,8 +45,8 @@
 .strategy-controls,
 .path-controls {
     align-items: center;
-    background-color: #eef2f6;
-    border: 1px solid #c8d1df;
+    background-color: var(--utn-page);
+    border: 1px solid var(--utn-border);
     border-radius: 8px;
     display: flex;
     gap: 7px;
@@ -55,7 +55,7 @@
 
 .strategy-controls label,
 .path-controls label {
-    color: #172033;
+    color: var(--utn-text);
     font-size: 13px;
     font-weight: 800;
     padding-left: 7px;
@@ -63,10 +63,10 @@
 
 .strategy-controls select,
 .path-controls select {
-    background-color: #ffffff;
-    border: 1px solid #c8d1df;
+    background-color: var(--utn-surface);
+    border: 1px solid var(--utn-border);
     border-radius: 6px;
-    color: #172033;
+    color: var(--utn-text);
     font-size: 14px;
     font-weight: 800;
     padding: 8px 6px;
@@ -81,10 +81,10 @@
 }
 
 .actions button {
-    background-color: #2457c5;
+    background-color: var(--utn-blue);
     border: 0;
     border-radius: 6px;
-    color: white;
+    color: var(--utn-text);
     cursor: pointer;
     font-size: 14px;
     font-weight: 700;
@@ -93,19 +93,19 @@
 
 .tool-mode button {
     background-color: transparent;
-    color: #172033;
+    color: var(--utn-text);
 }
 
 .tool-mode button.active-tool {
-    background-color: #ffffff;
-    box-shadow: 0 1px 4px rgba(23, 32, 51, 0.15);
-    color: #2457c5;
+    background-color: var(--utn-surface);
+    box-shadow: 0 1px 4px rgba(0, 47, 96, 0.14);
+    color: var(--utn-blue);
 }
 
 .random-controls {
     align-items: center;
-    background-color: #eef2f6;
-    border: 1px solid #c8d1df;
+    background-color: var(--utn-page);
+    border: 1px solid var(--utn-border);
     border-radius: 8px;
     display: flex;
     gap: 7px;
@@ -113,16 +113,16 @@
 }
 
 .random-controls label {
-    color: #172033;
+    color: var(--utn-text);
     font-size: 13px;
     font-weight: 800;
     padding-left: 7px;
 }
 
 .random-controls input {
-    border: 1px solid #c8d1df;
+    border: 1px solid var(--utn-border);
     border-radius: 6px;
-    color: #172033;
+    color: var(--utn-text);
     font-size: 14px;
     font-weight: 800;
     padding: 8px 6px;
@@ -130,11 +130,11 @@
 }
 
 .random-controls button {
-    background-color: #7c3aed;
+    background-color: var(--utn-cyan);
 }
 
 .actions > button.secondary-action {
-    background-color: #5a6475;
+    background-color: var(--utn-muted);
 }
 
 .actions button:hover {
@@ -142,12 +142,12 @@
 }
 
 .background {
-    background-color: #eef2f6;
+    background-color: var(--utn-page);
     background-image:
-        linear-gradient(#dfe5ee 1px, transparent 1px),
-        linear-gradient(90deg, #dfe5ee 1px, transparent 1px);
+        linear-gradient(var(--utn-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--utn-grid) 1px, transparent 1px);
     background-size: 24px 24px;
-    border: 1px solid #cfd8e6;
+    border: 1px solid var(--utn-border);
     border-radius: 8px;
     cursor: crosshair;
     height: var(--workspace-height);
@@ -172,7 +172,7 @@
 }
 
 .edge {
-    stroke: #687386;
+    stroke: var(--utn-muted);
     stroke-linecap: round;
     stroke-width: 3;
 }
@@ -186,12 +186,12 @@
 }
 
 .mst-edge {
-    stroke: #13a86b;
+    stroke: var(--utn-success);
     stroke-width: 5;
 }
 
 .preview-edge {
-    stroke: #2457c5;
+    stroke: var(--utn-blue);
     stroke-dasharray: 8 7;
     stroke-linecap: round;
     stroke-width: 3;
@@ -199,11 +199,11 @@
 
 .edge-weight {
     cursor: pointer;
-    fill: #172033;
+    fill: var(--utn-text);
     font-size: 15px;
     font-weight: 800;
     paint-order: stroke;
-    stroke: #eef2f6;
+    stroke: var(--utn-page);
     stroke-linejoin: round;
     stroke-width: 5px;
     pointer-events: all;
@@ -211,16 +211,16 @@
 }
 
 .mst-weight {
-    fill: #08794c;
+    fill: var(--utn-success-dark);
 }
 
 .node {
     align-items: center;
-    background-color: #ffffff;
-    border: 3px solid #2457c5;
+    background-color: var(--utn-surface);
+    border: 3px solid var(--utn-blue);
     border-radius: 50%;
-    box-shadow: 0 6px 16px rgba(23, 32, 51, 0.18);
-    color: #172033;
+    box-shadow: 0 6px 16px rgba(0, 47, 96, 0.18);
+    color: var(--utn-text);
     cursor: pointer;
     display: flex;
     font-size: 16px;
@@ -239,18 +239,18 @@
 }
 
 .selected-node {
-    background-color: #dfe9ff;
-    border-color: #13a86b;
+    background-color: var(--utn-cyan-soft);
+    border-color: var(--utn-success);
 }
 
 .trash-drop-zone {
     align-items: center;
     background-color: rgba(255, 255, 255, 0.94);
-    border: 2px dashed #c43d4b;
+    border: 2px dashed var(--utn-danger);
     border-radius: 8px;
     bottom: 18px;
-    box-shadow: 0 10px 24px rgba(23, 32, 51, 0.18);
-    color: #8f1f2d;
+    box-shadow: 0 10px 24px rgba(0, 47, 96, 0.18);
+    color: var(--utn-danger);
     display: flex;
     flex-direction: column;
     font-size: 12px;
@@ -271,10 +271,10 @@
 }
 
 .model-panel {
-    background-color: #f8fafc;
-    border: 1px solid #cfd8e6;
+    background-color: var(--utn-surface-soft);
+    border: 1px solid var(--utn-border);
     border-radius: 8px;
-    color: #172033;
+    color: var(--utn-text);
     display: grid;
     gap: 14px;
     grid-template-columns: minmax(180px, 0.22fr) minmax(0, 1fr);
@@ -288,7 +288,7 @@
 }
 
 .model-panel > div:first-child span {
-    color: #5a6475;
+    color: var(--utn-muted);
     font-size: 13px;
     font-weight: 800;
 }
@@ -302,8 +302,8 @@
 
 .model-sets p {
     align-items: flex-start;
-    background-color: #ffffff;
-    border: 1px solid #d9e0ec;
+    background-color: var(--utn-surface);
+    border: 1px solid var(--utn-border);
     border-radius: 6px;
     display: grid;
     gap: 10px;
@@ -314,7 +314,7 @@
 }
 
 .model-sets strong {
-    color: #2457c5;
+    color: var(--utn-blue);
 }
 
 .model-sets span {
@@ -333,12 +333,12 @@
 
 .error-toast {
     align-items: flex-start;
-    background-color: #fff1f3;
-    border: 1px solid #ef4056;
-    border-left: 5px solid #c43d4b;
+    background-color: var(--utn-danger-soft);
+    border: 1px solid var(--utn-danger);
+    border-left: 5px solid var(--utn-danger);
     border-radius: 8px;
-    box-shadow: 0 16px 36px rgba(23, 32, 51, 0.22);
-    color: #701827;
+    box-shadow: 0 16px 36px rgba(0, 47, 96, 0.22);
+    color: var(--utn-danger);
     display: grid;
     gap: 4px 12px;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -361,7 +361,7 @@
     align-items: center;
     background-color: transparent;
     border: 0;
-    color: #701827;
+    color: var(--utn-danger);
     cursor: pointer;
     display: flex;
     font-size: 16px;
@@ -374,8 +374,8 @@
 }
 
 .trash-drop-zone-active {
-    background-color: #fff1f3;
-    border-color: #ef4056;
+    background-color: var(--utn-danger-soft);
+    border-color: var(--utn-danger);
     box-shadow: 0 12px 28px rgba(196, 61, 75, 0.28);
     transform: scale(1.05);
 }
@@ -388,7 +388,7 @@
 }
 
 .trash-can-lid {
-    background-color: #c43d4b;
+    background-color: var(--utn-danger);
     border-radius: 3px 3px 1px 1px;
     display: block;
     height: 6px;
@@ -397,7 +397,7 @@
 }
 
 .trash-can-lid::before {
-    background-color: #c43d4b;
+    background-color: var(--utn-danger);
     border-radius: 3px 3px 0 0;
     content: '';
     height: 5px;
@@ -409,7 +409,7 @@
 
 .trash-can-body {
     align-items: center;
-    border: 3px solid #c43d4b;
+    border: 3px solid var(--utn-danger);
     border-radius: 3px 3px 7px 7px;
     display: flex;
     gap: 4px;
@@ -419,7 +419,7 @@
 }
 
 .trash-can-body span {
-    background-color: #c43d4b;
+    background-color: var(--utn-danger);
     border-radius: 2px;
     display: block;
     height: 18px;
@@ -427,10 +427,10 @@
 }
 
 .result-panel {
-    background-color: #f8fafc;
-    border: 1px solid #cfd8e6;
+    background-color: var(--utn-surface-soft);
+    border: 1px solid var(--utn-border);
     border-radius: 8px;
-    color: #172033;
+    color: var(--utn-text);
     display: flex;
     flex-direction: column;
     height: var(--workspace-height);
@@ -439,7 +439,7 @@
 
 .result-header {
     align-items: center;
-    border-bottom: 1px solid #d9e0ec;
+    border-bottom: 1px solid var(--utn-border);
     display: flex;
     justify-content: space-between;
     gap: 10px;
@@ -447,14 +447,14 @@
 }
 
 .result-header span {
-    color: #08794c;
+    color: var(--utn-success-dark);
     font-weight: 800;
 }
 
 .result-summary {
-    background-color: #ffffff;
-    border-bottom: 1px solid #d9e0ec;
-    color: #172033;
+    background-color: var(--utn-surface);
+    border-bottom: 1px solid var(--utn-border);
+    color: var(--utn-text);
     font-size: 14px;
     font-weight: 800;
     line-height: 1.35;
@@ -464,7 +464,7 @@
 
 .empty-result {
     align-items: center;
-    color: #5a6475;
+    color: var(--utn-muted);
     display: flex;
     flex: 1;
     font-weight: 700;
@@ -474,38 +474,38 @@
 }
 
 .result-graph {
-    background-color: #eef2f6;
+    background-color: var(--utn-page);
     flex: 1;
     min-height: 0;
     width: 100%;
 }
 
 .result-edge {
-    stroke: #13a86b;
+    stroke: var(--utn-success);
     stroke-linecap: round;
     stroke-width: 5;
 }
 
 .result-weight {
-    fill: #08794c;
+    fill: var(--utn-success-dark);
     font-size: 16px;
     font-weight: 900;
     paint-order: stroke;
-    stroke: #eef2f6;
+    stroke: var(--utn-page);
     stroke-linejoin: round;
     stroke-width: 6px;
     text-anchor: middle;
 }
 
 .result-node {
-    fill: #ffffff;
-    stroke: #2457c5;
+    fill: var(--utn-surface);
+    stroke: var(--utn-blue);
     stroke-width: 4;
 }
 
 .result-node-label {
     dominant-baseline: middle;
-    fill: #172033;
+    fill: var(--utn-text);
     font-size: 15px;
     font-weight: 900;
     text-anchor: middle;
@@ -532,3 +532,4 @@
         grid-template-columns: 1fr;
     }
 }
+

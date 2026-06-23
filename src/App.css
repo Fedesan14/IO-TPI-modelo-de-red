@@ -1,14 +1,35 @@
+:root {
+  --utn-blue: #f5a800;
+  --utn-blue-dark: #d89100;
+  --utn-blue-deep: #ffffff;
+  --utn-cyan: #f5a800;
+  --utn-cyan-soft: #fff3cc;
+  --utn-page: #f7f7f7;
+  --utn-surface: #ffffff;
+  --utn-surface-soft: #ffffff;
+  --utn-border: #d8d8d8;
+  --utn-grid: #e9e9e9;
+  --utn-text: #111111;
+  --utn-muted: #6f6f6f;
+  --utn-success: #009b77;
+  --utn-success-dark: #00795f;
+  --utn-danger: #c43d4b;
+  --utn-danger-soft: #fff1f3;
+}
+
 .App {
   text-align: center;
-  background-color: #282c34;
+  background-color: var(--utn-page);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  color: white;
+  color: var(--utn-text);
 }
 
 .App-header {
   align-items: center;
+  background-color: var(--utn-blue-deep);
+  border-bottom: 4px solid var(--utn-blue);
   display: flex;
   gap: 18px;
   justify-content: center;
@@ -21,6 +42,7 @@
 }
 
 .header-title {
+  color: var(--utn-text);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -35,7 +57,7 @@
 }
 
 .teachers {
-  color: #dfe5ee;
+  color: var(--utn-muted);
   font-size: 15px;
   font-weight: 700;
 }
