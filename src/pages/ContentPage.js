@@ -1,6 +1,7 @@
 import GraphToolbar from '../components/graph/GraphToolbar';
 import GraphWorkspace from '../components/graph/GraphWorkspace';
 import ErrorToast from '../components/graph/ErrorToast';
+import HowToPanel from '../components/graph/HowToPanel';
 import ModelPanel from '../components/graph/ModelPanel';
 import { useGraphEditor } from '../hooks/useGraphEditor';
 import './ContentPage.css';
@@ -26,6 +27,8 @@ function ContentPage () {
                 onClearGraph={graphEditor.clearGraph}
                 onGenerateRandomGraph={graphEditor.generateRandomGraph}
             />
+
+            <HowToPanel />
 
             <GraphWorkspace
                 graphRef={graphEditor.graphRef}
