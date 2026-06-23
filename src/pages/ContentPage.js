@@ -1,6 +1,7 @@
 import GraphToolbar from '../components/graph/GraphToolbar';
 import GraphWorkspace from '../components/graph/GraphWorkspace';
-import StatusBar from '../components/graph/StatusBar';
+import ErrorToast from '../components/graph/ErrorToast';
+import ModelPanel from '../components/graph/ModelPanel';
 import { useGraphEditor } from '../hooks/useGraphEditor';
 import './ContentPage.css';
 
@@ -11,7 +12,6 @@ function ContentPage () {
         <div className='content-page'>
             <GraphToolbar
                 nodes={graphEditor.nodes}
-                edges={graphEditor.edges}
                 toolMode={graphEditor.toolMode}
                 strategy={graphEditor.strategy}
                 sourceNodeId={graphEditor.sourceNodeId}
@@ -52,9 +52,14 @@ function ContentPage () {
                 onEdgeDoubleClick={graphEditor.updateEdgeWeight}
             />
 
-            <StatusBar
-                message={graphEditor.message}
-                totalWeight={graphEditor.totalWeight}
+            <ModelPanel
+                nodes={graphEditor.nodes}
+                edges={graphEditor.edges}
+            />
+
+            <ErrorToast
+                toast={graphEditor.errorToast}
+                onClose={graphEditor.clearErrorToast}
             />
         </div>
     )

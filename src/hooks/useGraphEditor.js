@@ -24,6 +24,7 @@ export function useGraphEditor() {
     const [previewPosition, setPreviewPosition] = useState(null);
     const [randomNodeCount, setRandomNodeCount] = useState(6);
     const [message, setMessage] = useState('Doble click para agregar nodos. Arrastra entre nodos para crear aristas.');
+    const [errorToast, setErrorToast] = useState(null);
     const [totalWeight, setTotalWeight] = useState(null);
 
     const resultEdgeIds = useMemo(() => new Set(resultEdges.map((edge) => edge.id)), [resultEdges]);
@@ -100,6 +101,17 @@ export function useGraphEditor() {
         setTotalWeight(null);
     };
 
+    const showError = useCallback((errorMessage) => {
+        setErrorToast({
+            id: Date.now(),
+            message: errorMessage
+        });
+    }, []);
+
+    const clearErrorToast = useCallback(() => {
+        setErrorToast(null);
+    }, []);
+
     const handleDoubleClick = (event) => {
         if (event.target !== graphRef.current) {
             return;
@@ -113,6 +125,7 @@ export function useGraphEditor() {
         };
 
         setNodes((currentNodes) => [...currentNodes, nextNode]);
+        clearErrorToast();
         if (nodes.length === 0) {
             setSourceNodeId(nextNode.id);
         }
@@ -169,7 +182,7 @@ export function useGraphEditor() {
         });
 
         if (edgeAlreadyExists) {
-            setMessage('Ya existe una arista entre esos nodos.');
+            showError('Ya existe una arista entre esos nodos.');
             setDragStartNodeId(null);
             setPreviewPosition(null);
             return;
@@ -179,7 +192,7 @@ export function useGraphEditor() {
         const weight = Number(weightInput);
 
         if (!weightInput || Number.isNaN(weight) || weight <= 0) {
-            setMessage('La arista no se creo porque el peso debe ser un numero positivo.');
+            showError('La arista no se creo porque el peso debe ser un numero positivo.');
             setDragStartNodeId(null);
             setPreviewPosition(null);
             return;
@@ -193,6 +206,7 @@ export function useGraphEditor() {
         };
 
         setEdges((currentEdges) => [...currentEdges, nextEdge]);
+        clearErrorToast();
         resetResult();
         setMessage(`Arista ${dragStartNodeId} - ${targetNodeId} creada con peso ${weight}.`);
         setDragStartNodeId(null);
@@ -246,8 +260,14 @@ export function useGraphEditor() {
         setResultNodeIds(result.resultNodeIds || []);
         setResultText(result.resultText || '');
         setTotalWeight(result.totalWeight);
-        setMessage(result.error || result.message);
-    }, [edges, nodes, sourceNodeId, strategy, targetNodeId]);
+        setMessage(result.message || '');
+
+        if (result.error) {
+            showError(result.error);
+        } else {
+            clearErrorToast();
+        }
+    }, [clearErrorToast, edges, nodes, showError, sourceNodeId, strategy, targetNodeId]);
 
     const updateEdgeWeight = (edgeId) => {
         const edge = edges.find((currentEdge) => currentEdge.id === edgeId);
@@ -263,7 +283,7 @@ export function useGraphEditor() {
         const weight = Number(weightInput);
 
         if (!weightInput || Number.isNaN(weight) || weight <= 0) {
-            setMessage('El peso no se modifico porque debe ser un numero positivo.');
+            showError('El peso no se modifico porque debe ser un numero positivo.');
             return;
         }
 
@@ -274,6 +294,7 @@ export function useGraphEditor() {
                     : currentEdge
             ))
         ));
+        clearErrorToast();
         resetResult();
         setMessage(`Peso de la arista ${edge.from} - ${edge.to} actualizado a ${weight}.`);
     };
@@ -360,6 +381,7 @@ export function useGraphEditor() {
         setSourceNodeId('');
         setTargetNodeId('');
         setTotalWeight(null);
+        clearErrorToast();
         setMessage('Grafo limpio. Doble click para agregar nuevos nodos.');
     };
 
@@ -408,6 +430,7 @@ export function useGraphEditor() {
         setSourceNodeId(graph.nodes[0]?.id || '');
         setTargetNodeId(graph.nodes[graph.nodes.length - 1]?.id || '');
         setTotalWeight(null);
+        clearErrorToast();
         setMessage(`Grafo aleatorio conectado generado con ${nodeCount} nodos y ${graph.edges.length} aristas.`);
     };
 
@@ -430,6 +453,7 @@ export function useGraphEditor() {
         previewPosition,
         randomNodeCount,
         message,
+        errorToast,
         totalWeight,
         setRandomNodeCount,
         setSourceNodeId,
@@ -444,6 +468,7 @@ export function useGraphEditor() {
         updateEdgeWeight,
         calculateResult,
         clearGraph,
+        clearErrorToast,
         selectStrategy,
         selectToolMode,
         generateRandomGraph

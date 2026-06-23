@@ -1,6 +1,5 @@
 function GraphToolbar({
     nodes,
-    edges,
     toolMode,
     strategy,
     sourceNodeId,
@@ -17,14 +16,7 @@ function GraphToolbar({
 }) {
     return (
         <div className='toolbar'>
-            <div className='model-summary'>
-                <strong>Modelo (N, A)</strong>
-                <span>N = {`{${nodes.map((node) => node.id).join(', ')}}`}</span>
-                <span>
-                    A = {`{${edges.map((edge) => `(${edge.from}, ${edge.to}, ${edge.weight})`).join(', ')}}`}
-                </span>
-            </div>
-            <div className='actions'>
+            <div className='toolbar-left'>
                 <div className='strategy-controls'>
                     <label htmlFor='strategy-select'>Estrategia</label>
                     <select
@@ -62,6 +54,8 @@ function GraphToolbar({
                         </select>
                     </div>
                 )}
+            </div>
+            <div className='actions'>
                 <div className='tool-mode' aria-label='Modo de edicion'>
                     <button
                         type='button'
