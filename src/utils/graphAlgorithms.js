@@ -6,16 +6,34 @@ function formatDistance(value) {
     return value === Infinity ? 'infinito' : value;
 }
 
-function formatLabels(nodeIds, distances, previousNode) {
-    if (nodeIds.length === 0) {
+function formatDijkstraLabel(nodeId, distances, previousNode, sourceNodeId) {
+    if (nodeId === sourceNodeId) {
+        return `[${sourceNodeId}, -]`;
+    }
+
+    const previous = previousNode.get(nodeId);
+
+    if (!previous) {
+        return `[-, ${formatDistance(distances.get(nodeId))}]`;
+    }
+
+    return `[${previous}, ${formatDistance(distances.get(nodeId))}]`;
+}
+
+function formatLabels(nodeIds, distances, previousNode, sourceNodeId) {
+    const labeledNodeIds = nodeIds.filter((nodeId) => (
+        nodeId === sourceNodeId ||
+        distances.get(nodeId) !== Infinity ||
+        previousNode.has(nodeId)
+    ));
+
+    if (labeledNodeIds.length === 0) {
         return '{}';
     }
 
-    return nodeIds
+    return labeledNodeIds
         .map((nodeId) => {
-            const previous = previousNode.get(nodeId);
-            const previousText = previous ? `, anterior ${previous}` : '';
-            return `${nodeId}: ${formatDistance(distances.get(nodeId))}${previousText}`;
+            return `Nodo ${nodeId}: ${formatDijkstraLabel(nodeId, distances, previousNode, sourceNodeId)}`;
         })
         .join(' | ');
 }
@@ -146,7 +164,7 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
                 title: 'Inicio',
                 details: [
                     `El origen y el destino son el mismo nodo: ${sourceNodeId}.`,
-                    'La etiqueta permanente del origen es 0. Distancia total: 0.'
+                    `La etiqueta permanente del origen es Nodo ${sourceNodeId}: [${sourceNodeId}, -]. Distancia total: 0.`
                 ]
             }],
             totalWeight: 0,
@@ -160,17 +178,8 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
     const unvisited = new Set(nodes.map((node) => node.id));
     const permanentLabels = new Set();
     const calculationSteps = [];
-    const nodeIds = nodes.map((node) => node.id);
 
     distances.set(sourceNodeId, 0);
-    calculationSteps.push({
-        title: 'Inicio',
-        details: [
-            `Etiqueta inicial del origen ${sourceNodeId}: 0.`,
-            `Etiquetas no permanentes: ${formatLabels(nodeIds, distances, previousNode)}.`,
-            'Etiquetas permanentes: {}.'
-        ]
-    });
 
     while (unvisited.size > 0) {
         const currentNodeId = [...unvisited].sort((firstNodeId, secondNodeId) => (
@@ -185,12 +194,12 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
             permanentLabels.add(currentNodeId);
             unvisited.delete(currentNodeId);
             calculationSteps.push({
-                title: `Paso ${calculationSteps.length}`,
+                title: `Paso ${calculationSteps.length + 1}`,
                 details: [
-                    `Se selecciona el nodo ${currentNodeId} con etiqueta menor (${formatDistance(distances.get(currentNodeId))}) y se vuelve permanente.`,
+                    `Se fija como permanente el nodo ${currentNodeId} con etiqueta ${formatDijkstraLabel(currentNodeId, distances, previousNode, sourceNodeId)}.`,
                     `Como ${currentNodeId} es el destino, el algoritmo termina.`,
-                    `Etiquetas permanentes: ${formatLabels([...permanentLabels], distances, previousNode)}.`,
-                    `Etiquetas no permanentes: ${formatLabels([...unvisited], distances, previousNode)}.`
+                    `Etiquetas permanentes: ${formatLabels([...permanentLabels], distances, previousNode, sourceNodeId)}.`,
+                    `Etiquetas temporales: ${formatLabels([...unvisited], distances, previousNode, sourceNodeId)}.`
                 ]
             });
             break;
@@ -219,19 +228,19 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
                 previousNode.set(neighborNodeId, currentNodeId);
                 previousEdge.set(neighborNodeId, edge);
                 updates.push(
-                    `Nodo ${neighborNodeId}: ${formatDistance(previousDistance)} -> ${nextDistance} por (${edge.from}, ${edge.to}).`
+                    `Nodo ${neighborNodeId}: ${formatDistance(previousDistance)} -> [${currentNodeId}, ${nextDistance}] porque ${formatDistance(distances.get(currentNodeId))} + ${edge.weight} = ${nextDistance}.`
                 );
             }
         });
 
         calculationSteps.push({
-            title: `Paso ${calculationSteps.length}`,
+            title: `Paso ${calculationSteps.length + 1}`,
             details: [
-                `Se selecciona el nodo ${currentNodeId} con etiqueta menor (${formatDistance(distances.get(currentNodeId))}) y se vuelve permanente.`,
+                `Se fija como permanente el nodo ${currentNodeId} con etiqueta ${formatDijkstraLabel(currentNodeId, distances, previousNode, sourceNodeId)}.`,
                 `Aristas revisadas: ${connectedEdges.length ? connectedEdges.map((edge) => `(${edge.from}, ${edge.to}, peso ${edge.weight})`).join(' ; ') : 'ninguna'}.`,
-                updates.length ? `Actualizaciones: ${updates.join(' ')}` : 'No se actualiza ninguna etiqueta.',
-                `Etiquetas permanentes: ${formatLabels([...permanentLabels], distances, previousNode)}.`,
-                `Etiquetas no permanentes: ${formatLabels([...unvisited], distances, previousNode)}.`
+                updates.length ? `Etiquetas actualizadas: ${updates.join(' ')}` : 'No se actualiza ninguna etiqueta tentativa.',
+                `Etiquetas permanentes: ${formatLabels([...permanentLabels], distances, previousNode, sourceNodeId)}.`,
+                `Etiquetas temporales: ${formatLabels([...unvisited], distances, previousNode, sourceNodeId)}.`
             ]
         });
     }
