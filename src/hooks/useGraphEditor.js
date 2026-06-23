@@ -44,22 +44,73 @@ export function useGraphEditor() {
             }];
         }
 
-        const resultSize = 320;
-        const padding = 46;
-        const nodeXs = solutionNodes.map((node) => node.x);
-        const nodeYs = solutionNodes.map((node) => node.y);
-        const minX = Math.min(...nodeXs);
-        const minY = Math.min(...nodeYs);
-        const width = Math.max(Math.max(...nodeXs) - minX, 1);
-        const height = Math.max(Math.max(...nodeYs) - minY, 1);
-        const drawableSize = resultSize - padding * 2;
+        const padding = 48;
+        const nodeById = new Map(solutionNodes.map((node) => [node.id, node]));
 
-        return solutionNodes.map((node) => ({
-            ...node,
-            resultX: padding + ((node.x - minX) / width) * drawableSize,
-            resultY: padding + ((node.y - minY) / height) * drawableSize
-        }));
-    }, [nodes, resultNodeIds]);
+        if (strategy === 'dijkstra') {
+            const horizontalGap = 82;
+            const canvasWidth = Math.max(320, padding * 2 + horizontalGap * (resultNodeIds.length - 1));
+
+            return resultNodeIds.map((nodeId, index) => ({
+                ...nodeById.get(nodeId),
+                resultX: resultNodeIds.length === 1
+                    ? canvasWidth / 2
+                    : padding + index * horizontalGap,
+                resultY: 160
+            }));
+        }
+
+        const adjacency = new Map(solutionNodes.map((node) => [node.id, []]));
+
+        resultEdges.forEach((edge) => {
+            adjacency.get(edge.from)?.push(edge.to);
+            adjacency.get(edge.to)?.push(edge.from);
+        });
+
+        adjacency.forEach((neighbors) => neighbors.sort((firstNodeId, secondNodeId) => firstNodeId - secondNodeId));
+
+        const horizontalGap = 54;
+        const verticalGap = 78;
+        const rootNodeId = resultNodeIds[0];
+        const positionedNodes = new Map();
+        let leafIndex = 0;
+        let maxDepth = 0;
+
+        const placeNode = (nodeId, parentNodeId, depth) => {
+            maxDepth = Math.max(maxDepth, depth);
+
+            const childNodeIds = (adjacency.get(nodeId) || []).filter((nextNodeId) => nextNodeId !== parentNodeId);
+
+            if (childNodeIds.length === 0) {
+                const x = padding + leafIndex * horizontalGap;
+                leafIndex += 1;
+                positionedNodes.set(nodeId, { x, depth });
+                return x;
+            }
+
+            const childXs = childNodeIds.map((childNodeId) => placeNode(childNodeId, nodeId, depth + 1));
+            const x = childXs.reduce((sum, childX) => sum + childX, 0) / childXs.length;
+            positionedNodes.set(nodeId, { x, depth });
+            return x;
+        };
+
+        placeNode(rootNodeId, null, 0);
+
+        const canvasWidth = Math.max(320, padding * 2 + Math.max(leafIndex - 1, 1) * horizontalGap);
+        const canvasHeight = Math.max(320, padding * 2 + maxDepth * verticalGap);
+
+        return solutionNodes.map((node) => {
+            const position = positionedNodes.get(node.id);
+
+            return {
+                ...node,
+                resultX: position?.x || canvasWidth / 2,
+                resultY: position
+                    ? padding + position.depth * verticalGap
+                    : canvasHeight / 2
+            };
+        });
+    }, [nodes, resultEdges, resultNodeIds, strategy]);
 
     const getPointerPosition = (event) => {
         const rect = graphRef.current.getBoundingClientRect();

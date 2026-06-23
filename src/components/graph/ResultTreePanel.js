@@ -10,6 +10,15 @@ function ResultTreePanel({
     const emptyMessage = strategy === 'prim'
         ? 'Calcula el arbol para ver el resultado.'
         : 'Calcula la ruta para ver el resultado.';
+    const graphPadding = 48;
+    const graphWidth = Math.max(
+        320,
+        ...resultNodes.map((node) => node.resultX + graphPadding)
+    );
+    const graphHeight = Math.max(
+        320,
+        ...resultNodes.map((node) => node.resultY + graphPadding)
+    );
 
     return (
         <aside className='result-panel'>
@@ -28,7 +37,7 @@ function ResultTreePanel({
                     {emptyMessage}
                 </div>
             ) : (
-                <svg className='result-graph' viewBox='0 0 320 320' preserveAspectRatio='xMidYMid meet'>
+                <svg className='result-graph' viewBox={`0 0 ${graphWidth} ${graphHeight}`} preserveAspectRatio='xMidYMid meet'>
                     {resultEdges.map((edge) => {
                         const fromNode = getResultNodeById(edge.from);
                         const toNode = getResultNodeById(edge.to);
