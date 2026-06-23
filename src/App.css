@@ -8,8 +8,36 @@
 }
 
 .App-header {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  padding: 18px 24px;
+}
+
+.utn-logo {
+  object-fit: contain;
+  width: 352px;
+}
+
+.header-title {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.header-title h1,
+.header-title h2,
+.header-title p {
+  margin: 0;
+  padding: 0;
+}
+
+.teachers {
+  color: #dfe5ee;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .App-content {
@@ -17,7 +45,25 @@
   margin: 0px 50px
 }
 
-h1 h2 h3 {
+h1,
+h2,
+h3 {
   margin: 0;
   padding: 0;
+}
+
+@media (max-width: 760px) {
+  .App-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .header-title {
+    text-align: center;
+  }
+
+  .utn-logo {
+    width: 248px;
+  }
 }
