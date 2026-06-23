@@ -6,8 +6,9 @@ function ResultTreePanel({
     totalWeight,
     getResultNodeById
 }) {
-    const title = strategy === 'prim' ? 'Arbol resultado' : 'Ruta resultado';
-    const emptyMessage = strategy === 'prim'
+    const isTreeStrategy = strategy === 'prim' || strategy === 'kruskal';
+    const title = isTreeStrategy ? 'Arbol resultado' : 'Ruta resultado';
+    const emptyMessage = isTreeStrategy
         ? 'Calcula el arbol para ver el resultado.'
         : 'Calcula la ruta para ver el resultado.';
     const graphPadding = 48;

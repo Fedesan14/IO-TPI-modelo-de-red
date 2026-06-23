@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { calculateDijkstra, calculatePrim } from '../utils/graphAlgorithms';
+import { calculateDijkstra, calculateKruskal, calculatePrim } from '../utils/graphAlgorithms';
+import { getRandomBookGraphId, generateBookGraph } from '../utils/bookGraphs';
 import { generateConnectedRandomGraph } from '../utils/randomGraph';
 
 export function useGraphEditor() {
@@ -24,6 +25,7 @@ export function useGraphEditor() {
     const [isOverTrash, setIsOverTrash] = useState(false);
     const [previewPosition, setPreviewPosition] = useState(null);
     const [randomNodeCount, setRandomNodeCount] = useState(6);
+    const [bookGraphReference, setBookGraphReference] = useState(null);
     const [message, setMessage] = useState('Doble click para agregar nodos. Arrastra entre nodos para crear aristas.');
     const [errorToast, setErrorToast] = useState(null);
     const [totalWeight, setTotalWeight] = useState(null);
@@ -178,6 +180,7 @@ export function useGraphEditor() {
         };
 
         setNodes((currentNodes) => [...currentNodes, nextNode]);
+        setBookGraphReference(null);
         clearErrorToast();
         if (nodes.length === 0) {
             setSourceNodeId(nextNode.id);
@@ -259,6 +262,7 @@ export function useGraphEditor() {
         };
 
         setEdges((currentEdges) => [...currentEdges, nextEdge]);
+        setBookGraphReference(null);
         clearErrorToast();
         resetResult();
         setMessage(`Arista ${dragStartNodeId} - ${targetNodeId} creada con peso ${weight}.`);
@@ -307,7 +311,9 @@ export function useGraphEditor() {
     const calculateResult = useCallback(() => {
         const result = strategy === 'prim'
             ? calculatePrim(nodes, edges)
-            : calculateDijkstra(nodes, edges, Number(sourceNodeId), Number(targetNodeId));
+            : strategy === 'kruskal'
+                ? calculateKruskal(nodes, edges)
+                : calculateDijkstra(nodes, edges, Number(sourceNodeId), Number(targetNodeId));
 
         setResultEdges(result.mstEdges || result.pathEdges || []);
         setResultNodeIds(result.resultNodeIds || []);
@@ -348,6 +354,7 @@ export function useGraphEditor() {
                     : currentEdge
             ))
         ));
+        setBookGraphReference(null);
         clearErrorToast();
         resetResult();
         setMessage(`Peso de la arista ${edge.from} - ${edge.to} actualizado a ${weight}.`);
@@ -373,6 +380,7 @@ export function useGraphEditor() {
         setTargetNodeId((currentTargetNodeId) => (
             Number(currentTargetNodeId) === nodeId ? '' : currentTargetNodeId
         ));
+        setBookGraphReference(null);
         setTotalWeight(null);
         setMessage(`Nodo ${nodeId} eliminado junto con sus aristas conectadas.`);
     }, []);
@@ -436,6 +444,7 @@ export function useGraphEditor() {
         setPreviewPosition(null);
         setSourceNodeId('');
         setTargetNodeId('');
+        setBookGraphReference(null);
         setTotalWeight(null);
         clearErrorToast();
         setMessage('Grafo limpio. Doble click para agregar nuevos nodos.');
@@ -447,7 +456,9 @@ export function useGraphEditor() {
         setMessage(
             nextStrategy === 'prim'
                 ? 'Estrategia seleccionada: arbol de expansion minima con Prim.'
-                : 'Estrategia seleccionada: ruta mas corta con Dijkstra.'
+                : nextStrategy === 'kruskal'
+                    ? 'Estrategia seleccionada: arbol de expansion minima con Kruskal.'
+                    : 'Estrategia seleccionada: ruta mas corta con Dijkstra.'
         );
     };
 
@@ -486,9 +497,36 @@ export function useGraphEditor() {
         setPreviewPosition(null);
         setSourceNodeId(graph.nodes[0]?.id || '');
         setTargetNodeId(graph.nodes[graph.nodes.length - 1]?.id || '');
+        setBookGraphReference(null);
         setTotalWeight(null);
         clearErrorToast();
         setMessage(`Grafo aleatorio conectado generado con ${nodeCount} nodos y ${graph.edges.length} aristas.`);
+    };
+
+    const generateBookGraphExample = () => {
+        const graphId = getRandomBookGraphId();
+        const graph = generateBookGraph({
+            graphId,
+            width: graphRef.current?.clientWidth,
+            height: graphRef.current?.clientHeight
+        });
+
+        setNodes(graph.nodes);
+        setEdges(graph.edges);
+        setResultEdges([]);
+        setResultNodeIds([]);
+        setResultText('');
+        setCalculationSteps([]);
+        setSelectedNodeId(null);
+        setDragStartNodeId(null);
+        setMovingNodeId(null);
+        setPreviewPosition(null);
+        setSourceNodeId(graph.nodes[0]?.id || '');
+        setTargetNodeId(graph.nodes[graph.nodes.length - 1]?.id || '');
+        setBookGraphReference(graph.reference);
+        setTotalWeight(null);
+        clearErrorToast();
+        setMessage(`${graph.name} cargado con ${graph.nodes.length} nodos y ${graph.edges.length} aristas.`);
     };
 
     return {
@@ -510,6 +548,7 @@ export function useGraphEditor() {
         isOverTrash,
         previewPosition,
         randomNodeCount,
+        bookGraphReference,
         message,
         errorToast,
         totalWeight,
@@ -529,6 +568,7 @@ export function useGraphEditor() {
         clearErrorToast,
         selectStrategy,
         selectToolMode,
-        generateRandomGraph
+        generateRandomGraph,
+        generateBookGraphExample
     };
 }

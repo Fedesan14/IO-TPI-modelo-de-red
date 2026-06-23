@@ -134,6 +134,150 @@ export function calculatePrim(nodes, edges) {
     };
 }
 
+export function calculateKruskal(nodes, edges) {
+    if (nodes.length === 0) {
+        return {
+            mstEdges: [],
+            resultNodeIds: [],
+            resultText: '',
+            totalWeight: null,
+            error: 'Agrega nodos antes de calcular el arbol.'
+        };
+    }
+
+    if (nodes.length === 1) {
+        return {
+            mstEdges: [],
+            resultNodeIds: [nodes[0].id],
+            resultText: `Nodo: ${nodes[0].id}`,
+            calculationSteps: [{
+                title: 'Inicio',
+                details: [
+                    `El grafo tiene un solo nodo: ${nodes[0].id}.`,
+                    'No es necesario elegir aristas. Peso total: 0.'
+                ]
+            }],
+            totalWeight: 0,
+            message: 'El arbol de un solo nodo tiene peso total 0.'
+        };
+    }
+
+    const parent = new Map(nodes.map((node) => [node.id, node.id]));
+    const rank = new Map(nodes.map((node) => [node.id, 0]));
+    const selectedEdges = [];
+    const sortedEdges = [...edges].sort((firstEdge, secondEdge) => firstEdge.weight - secondEdge.weight);
+    const calculationSteps = [{
+        title: 'Inicio',
+        details: [
+            'Se ordenan las aristas de menor a mayor peso.',
+            `Orden: ${sortedEdges.length ? sortedEdges.map((edge) => `(${edge.from}, ${edge.to}, peso ${edge.weight})`).join(' ; ') : 'sin aristas'}.`,
+            'Cada nodo comienza como un componente separado.'
+        ]
+    }];
+
+    const findRoot = (nodeId) => {
+        if (parent.get(nodeId) !== nodeId) {
+            parent.set(nodeId, findRoot(parent.get(nodeId)));
+        }
+
+        return parent.get(nodeId);
+    };
+
+    const union = (firstNodeId, secondNodeId) => {
+        const firstRoot = findRoot(firstNodeId);
+        const secondRoot = findRoot(secondNodeId);
+
+        if (firstRoot === secondRoot) {
+            return false;
+        }
+
+        if (rank.get(firstRoot) < rank.get(secondRoot)) {
+            parent.set(firstRoot, secondRoot);
+        } else if (rank.get(firstRoot) > rank.get(secondRoot)) {
+            parent.set(secondRoot, firstRoot);
+        } else {
+            parent.set(secondRoot, firstRoot);
+            rank.set(firstRoot, rank.get(firstRoot) + 1);
+        }
+
+        return true;
+    };
+
+    const formatComponents = () => {
+        const components = new Map();
+
+        nodes.forEach((node) => {
+            const root = findRoot(node.id);
+            const component = components.get(root) || [];
+            component.push(node.id);
+            components.set(root, component);
+        });
+
+        return [...components.values()]
+            .map((component) => formatSet(component.sort((firstNodeId, secondNodeId) => firstNodeId - secondNodeId)))
+            .join(' ; ');
+    };
+
+    sortedEdges.forEach((edge) => {
+        if (selectedEdges.length === nodes.length - 1) {
+            return;
+        }
+
+        const fromRoot = findRoot(edge.from);
+        const toRoot = findRoot(edge.to);
+
+        if (fromRoot === toRoot) {
+            calculationSteps.push({
+                title: `Paso ${calculationSteps.length}`,
+                details: [
+                    `Se evalua la arista (${edge.from}, ${edge.to}) con peso ${edge.weight}.`,
+                    `Se descarta porque ${edge.from} y ${edge.to} ya pertenecen al mismo componente.`,
+                    `Componentes actuales: ${formatComponents()}.`
+                ]
+            });
+            return;
+        }
+
+        selectedEdges.push(edge);
+        union(edge.from, edge.to);
+
+        calculationSteps.push({
+            title: `Paso ${calculationSteps.length}`,
+            details: [
+                `Se evalua la arista (${edge.from}, ${edge.to}) con peso ${edge.weight}.`,
+                'Se acepta porque une dos componentes distintos y no forma ciclo.',
+                `Aristas seleccionadas: ${selectedEdges.map((selectedEdge) => `(${selectedEdge.from}, ${selectedEdge.to})`).join(' - ')}.`,
+                `Componentes actuales: ${formatComponents()}.`
+            ]
+        });
+    });
+
+    if (selectedEdges.length !== nodes.length - 1) {
+        return {
+            mstEdges: [],
+            resultNodeIds: [],
+            resultText: '',
+            totalWeight: null,
+            error: 'No se puede calcular: el grafo no esta conectado.'
+        };
+    }
+
+    const totalWeight = selectedEdges.reduce((sum, edge) => sum + edge.weight, 0);
+    const resultNodeIds = [...new Set(selectedEdges.flatMap((edge) => [edge.from, edge.to]))];
+    const resultText = `Aristas: ${selectedEdges
+        .map((edge) => `(${edge.from}, ${edge.to})`)
+        .join(' - ')}`;
+
+    return {
+        mstEdges: selectedEdges,
+        resultNodeIds,
+        resultText,
+        calculationSteps,
+        totalWeight,
+        message: `Arbol de expansion minima calculado con Kruskal. Peso total: ${totalWeight}.`
+    };
+}
+
 export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
     if (nodes.length === 0) {
         return {

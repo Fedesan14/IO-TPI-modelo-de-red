@@ -1,7 +1,9 @@
 function CalculationStepsPanel({ steps, strategy }) {
     const title = strategy === 'prim'
         ? 'Paso a paso - Prim'
-        : 'Paso a paso - Dijkstra';
+        : strategy === 'kruskal'
+            ? 'Paso a paso - Kruskal'
+            : 'Paso a paso - Dijkstra';
 
     return (
         <section className='calculation-steps-panel' aria-label='Paso a paso del calculo'>

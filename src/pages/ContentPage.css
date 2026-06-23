@@ -133,12 +133,42 @@
     background-color: var(--utn-cyan);
 }
 
+.actions > button.book-graph-action {
+    background-color: var(--utn-surface);
+    border: 1px solid var(--utn-blue);
+    color: var(--utn-text);
+}
+
 .actions > button.secondary-action {
     background-color: var(--utn-muted);
 }
 
 .actions button:hover {
     filter: brightness(1.08);
+}
+
+.book-graph-legend {
+    align-items: center;
+    background-color: var(--utn-surface);
+    border: 1px solid var(--utn-border);
+    border-left: 6px solid var(--utn-blue);
+    border-radius: 8px;
+    color: var(--utn-text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 14px;
+    text-align: left;
+}
+
+.book-graph-legend strong {
+    font-size: 14px;
+}
+
+.book-graph-legend span {
+    color: var(--utn-muted);
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .how-to-panel {

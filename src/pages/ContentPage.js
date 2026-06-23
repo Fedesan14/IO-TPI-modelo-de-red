@@ -1,4 +1,5 @@
 import CalculationStepsPanel from '../components/graph/CalculationStepsPanel';
+import BookGraphLegend from '../components/graph/BookGraphLegend';
 import GraphToolbar from '../components/graph/GraphToolbar';
 import GraphWorkspace from '../components/graph/GraphWorkspace';
 import ErrorToast from '../components/graph/ErrorToast';
@@ -27,7 +28,10 @@ function ContentPage () {
                 onCalculateResult={graphEditor.calculateResult}
                 onClearGraph={graphEditor.clearGraph}
                 onGenerateRandomGraph={graphEditor.generateRandomGraph}
+                onGenerateBookGraph={graphEditor.generateBookGraphExample}
             />
+
+            <BookGraphLegend reference={graphEditor.bookGraphReference} />
 
             <HowToPanel />
 

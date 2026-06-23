@@ -12,7 +12,8 @@ function GraphToolbar({
     onRandomNodeCountChange,
     onCalculateResult,
     onClearGraph,
-    onGenerateRandomGraph
+    onGenerateRandomGraph,
+    onGenerateBookGraph
 }) {
     return (
         <div className='toolbar'>
@@ -25,6 +26,7 @@ function GraphToolbar({
                         onChange={(event) => onSelectStrategy(event.target.value)}
                     >
                         <option value='prim'>Arbol minimo - Prim</option>
+                        <option value='kruskal'>Arbol minimo - Kruskal</option>
                         <option value='dijkstra'>Ruta mas corta - Dijkstra</option>
                     </select>
                 </div>
@@ -86,6 +88,9 @@ function GraphToolbar({
                     />
                     <button type='button' onClick={onGenerateRandomGraph}>Aleatorio</button>
                 </div>
+                <button type='button' className='book-graph-action' onClick={onGenerateBookGraph}>
+                    Grafo de libro
+                </button>
             </div>
         </div>
     );
