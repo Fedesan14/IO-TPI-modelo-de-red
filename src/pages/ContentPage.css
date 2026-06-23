@@ -248,6 +248,86 @@
     border-color: #13a86b;
 }
 
+.trash-drop-zone {
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.94);
+    border: 2px dashed #c43d4b;
+    border-radius: 8px;
+    bottom: 18px;
+    box-shadow: 0 10px 24px rgba(23, 32, 51, 0.18);
+    color: #8f1f2d;
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    font-weight: 800;
+    gap: 7px;
+    height: 92px;
+    justify-content: center;
+    line-height: 1.15;
+    padding: 8px;
+    pointer-events: none;
+    position: absolute;
+    right: 18px;
+    text-align: center;
+    transform: scale(1);
+    transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+    width: 92px;
+    z-index: 3;
+}
+
+.trash-drop-zone-active {
+    background-color: #fff1f3;
+    border-color: #ef4056;
+    box-shadow: 0 12px 28px rgba(196, 61, 75, 0.28);
+    transform: scale(1.05);
+}
+
+.trash-can {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.trash-can-lid {
+    background-color: #c43d4b;
+    border-radius: 3px 3px 1px 1px;
+    display: block;
+    height: 6px;
+    position: relative;
+    width: 31px;
+}
+
+.trash-can-lid::before {
+    background-color: #c43d4b;
+    border-radius: 3px 3px 0 0;
+    content: '';
+    height: 5px;
+    left: 10px;
+    position: absolute;
+    top: -5px;
+    width: 11px;
+}
+
+.trash-can-body {
+    align-items: center;
+    border: 3px solid #c43d4b;
+    border-radius: 3px 3px 7px 7px;
+    display: flex;
+    gap: 4px;
+    height: 30px;
+    justify-content: center;
+    width: 27px;
+}
+
+.trash-can-body span {
+    background-color: #c43d4b;
+    border-radius: 2px;
+    display: block;
+    height: 18px;
+    width: 3px;
+}
+
 .result-panel {
     background-color: #f8fafc;
     border: 1px solid #cfd8e6;

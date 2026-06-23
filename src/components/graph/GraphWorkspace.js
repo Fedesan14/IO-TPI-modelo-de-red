@@ -14,6 +14,7 @@ function GraphWorkspace({
     selectedNodeId,
     dragStartNodeId,
     movingNodeId,
+    isOverTrash,
     previewPosition,
     getNodeById,
     getResultNodeById,
@@ -34,6 +35,7 @@ function GraphWorkspace({
                 selectedNodeId={selectedNodeId}
                 dragStartNodeId={dragStartNodeId}
                 movingNodeId={movingNodeId}
+                isOverTrash={isOverTrash}
                 previewPosition={previewPosition}
                 getNodeById={getNodeById}
                 onDoubleClick={onDoubleClick}

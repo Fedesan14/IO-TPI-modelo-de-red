@@ -6,6 +6,7 @@ function GraphCanvas({
     selectedNodeId,
     dragStartNodeId,
     movingNodeId,
+    isOverTrash,
     previewPosition,
     getNodeById,
     onDoubleClick,
@@ -16,6 +17,7 @@ function GraphCanvas({
     onEdgeDoubleClick
 }) {
     const previewStartNode = dragStartNodeId ? getNodeById(dragStartNodeId) : null;
+    const showTrashDropZone = Boolean(movingNodeId);
 
     return (
         <div
@@ -82,6 +84,20 @@ function GraphCanvas({
                     />
                 )}
             </svg>
+
+            {showTrashDropZone && (
+                <div className={isOverTrash ? 'trash-drop-zone trash-drop-zone-active' : 'trash-drop-zone'}>
+                    <span className='trash-can' aria-hidden='true'>
+                        <span className='trash-can-lid' />
+                        <span className='trash-can-body'>
+                            <span />
+                            <span />
+                            <span />
+                        </span>
+                    </span>
+                    <span>Soltar para eliminar</span>
+                </div>
+            )}
 
             {nodes.map((node) => (
                 <button

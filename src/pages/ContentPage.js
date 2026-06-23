@@ -40,6 +40,7 @@ function ContentPage () {
                 selectedNodeId={graphEditor.selectedNodeId}
                 dragStartNodeId={graphEditor.dragStartNodeId}
                 movingNodeId={graphEditor.movingNodeId}
+                isOverTrash={graphEditor.isOverTrash}
                 previewPosition={graphEditor.previewPosition}
                 getNodeById={graphEditor.getNodeById}
                 getResultNodeById={graphEditor.getResultNodeById}

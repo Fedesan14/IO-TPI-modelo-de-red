@@ -3,6 +3,10 @@ import { calculateDijkstra, calculatePrim } from '../utils/graphAlgorithms';
 import { generateConnectedRandomGraph } from '../utils/randomGraph';
 
 export function useGraphEditor() {
+    const trashDropZone = {
+        size: 92,
+        offset: 18
+    };
     const graphRef = useRef(null);
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
@@ -16,6 +20,7 @@ export function useGraphEditor() {
     const [selectedNodeId, setSelectedNodeId] = useState(null);
     const [dragStartNodeId, setDragStartNodeId] = useState(null);
     const [movingNodeId, setMovingNodeId] = useState(null);
+    const [isOverTrash, setIsOverTrash] = useState(false);
     const [previewPosition, setPreviewPosition] = useState(null);
     const [randomNodeCount, setRandomNodeCount] = useState(6);
     const [message, setMessage] = useState('Doble click para agregar nodos. Arrastra entre nodos para crear aristas.');
@@ -61,6 +66,23 @@ export function useGraphEditor() {
             x: event.clientX - rect.left,
             y: event.clientY - rect.top
         };
+    };
+
+    const isPointerOverTrash = (position) => {
+        if (!graphRef.current) {
+            return false;
+        }
+
+        const { clientWidth, clientHeight } = graphRef.current;
+        const left = clientWidth - trashDropZone.offset - trashDropZone.size;
+        const top = clientHeight - trashDropZone.offset - trashDropZone.size;
+
+        return (
+            position.x >= left &&
+            position.x <= left + trashDropZone.size &&
+            position.y >= top &&
+            position.y <= top + trashDropZone.size
+        );
     };
 
     const getNodeById = (nodeId) => {
@@ -119,7 +141,16 @@ export function useGraphEditor() {
         event.stopPropagation();
 
         if (toolMode === 'move') {
+            const position = getPointerPosition(event);
+
+            if (isPointerOverTrash(position)) {
+                deleteNode(targetNodeId);
+                setIsOverTrash(false);
+                return;
+            }
+
             setMovingNodeId(null);
+            setIsOverTrash(false);
             setMessage(`Nodo ${targetNodeId} seleccionado. Presiona Supr para eliminarlo.`);
             return;
         }
@@ -168,15 +199,27 @@ export function useGraphEditor() {
         setPreviewPosition(null);
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (event) => {
+        if (movingNodeId) {
+            const position = getPointerPosition(event);
+
+            if (isPointerOverTrash(position)) {
+                deleteNode(movingNodeId);
+                setIsOverTrash(false);
+                return;
+            }
+        }
+
         setDragStartNodeId(null);
         setMovingNodeId(null);
+        setIsOverTrash(false);
         setPreviewPosition(null);
     };
 
     const handleMouseMove = (event) => {
         if (movingNodeId) {
             const position = getPointerPosition(event);
+            setIsOverTrash(isPointerOverTrash(position));
             setNodes((currentNodes) => (
                 currentNodes.map((node) => (
                     node.id === movingNodeId
@@ -194,7 +237,7 @@ export function useGraphEditor() {
         setPreviewPosition(getPointerPosition(event));
     };
 
-    const calculateResult = () => {
+    const calculateResult = useCallback(() => {
         const result = strategy === 'prim'
             ? calculatePrim(nodes, edges)
             : calculateDijkstra(nodes, edges, Number(sourceNodeId), Number(targetNodeId));
@@ -204,7 +247,7 @@ export function useGraphEditor() {
         setResultText(result.resultText || '');
         setTotalWeight(result.totalWeight);
         setMessage(result.error || result.message);
-    };
+    }, [edges, nodes, sourceNodeId, strategy, targetNodeId]);
 
     const updateEdgeWeight = (edgeId) => {
         const edge = edges.find((currentEdge) => currentEdge.id === edgeId);
@@ -246,6 +289,7 @@ export function useGraphEditor() {
         setSelectedNodeId(null);
         setMovingNodeId(null);
         setDragStartNodeId(null);
+        setIsOverTrash(false);
         setPreviewPosition(null);
         setSourceNodeId((currentSourceNodeId) => (
             Number(currentSourceNodeId) === nodeId ? '' : currentSourceNodeId
@@ -265,6 +309,30 @@ export function useGraphEditor() {
                 return;
             }
 
+            if (event.code === 'Space') {
+                event.preventDefault();
+
+                const nextToolMode = toolMode === 'connect' ? 'move' : 'connect';
+                setToolMode(nextToolMode);
+                setSelectedNodeId(null);
+                setDragStartNodeId(null);
+                setMovingNodeId(null);
+                setIsOverTrash(false);
+                setPreviewPosition(null);
+                setMessage(
+                    nextToolMode === 'connect'
+                        ? 'Modo crear aristas: arrastra desde un nodo hasta otro.'
+                        : 'Modo mover nodos: arrastra un nodo para reubicarlo.'
+                );
+                return;
+            }
+
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                calculateResult();
+                return;
+            }
+
             if (event.key === 'Delete' && toolMode === 'move' && selectedNodeId) {
                 event.preventDefault();
                 deleteNode(selectedNodeId);
@@ -276,7 +344,7 @@ export function useGraphEditor() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [deleteNode, selectedNodeId, toolMode]);
+    }, [deleteNode, selectedNodeId, toolMode, calculateResult]);
 
     const clearGraph = () => {
         setNodes([]);
@@ -287,6 +355,7 @@ export function useGraphEditor() {
         setSelectedNodeId(null);
         setDragStartNodeId(null);
         setMovingNodeId(null);
+        setIsOverTrash(false);
         setPreviewPosition(null);
         setSourceNodeId('');
         setTargetNodeId('');
@@ -309,6 +378,7 @@ export function useGraphEditor() {
         setSelectedNodeId(null);
         setDragStartNodeId(null);
         setMovingNodeId(null);
+        setIsOverTrash(false);
         setPreviewPosition(null);
         setMessage(
             nextToolMode === 'connect'
@@ -356,6 +426,7 @@ export function useGraphEditor() {
         selectedNodeId,
         dragStartNodeId,
         movingNodeId,
+        isOverTrash,
         previewPosition,
         randomNodeCount,
         message,
