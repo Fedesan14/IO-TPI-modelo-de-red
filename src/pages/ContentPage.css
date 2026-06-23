@@ -612,11 +612,19 @@
     background-color: var(--utn-surface);
     border-bottom: 1px solid var(--utn-border);
     color: var(--utn-text);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     font-size: 14px;
     font-weight: 800;
     line-height: 1.35;
     padding: 10px 14px;
     overflow-wrap: anywhere;
+}
+
+.alternative-result {
+    color: var(--utn-muted);
+    font-size: 13px;
 }
 
 .empty-result {

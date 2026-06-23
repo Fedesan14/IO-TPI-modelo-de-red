@@ -9,6 +9,7 @@ function GraphWorkspace({
     resultEdgeIds,
     resultNodes,
     resultText,
+    alternativeResultText,
     strategy,
     totalWeight,
     selectedNodeId,
@@ -49,6 +50,7 @@ function GraphWorkspace({
                 resultNodes={resultNodes}
                 resultEdges={resultEdges}
                 resultText={resultText}
+                alternativeResultText={alternativeResultText}
                 strategy={strategy}
                 totalWeight={totalWeight}
                 getResultNodeById={getResultNodeById}

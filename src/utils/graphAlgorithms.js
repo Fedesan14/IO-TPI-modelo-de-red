@@ -38,6 +38,159 @@ function formatLabels(nodeIds, distances, previousNode, sourceNodeId) {
         .join(' | ');
 }
 
+function formatEdge(edge) {
+    return `(${edge.from}, ${edge.to}, peso ${edge.weight})`;
+}
+
+function getEdgeKey(edge) {
+    const from = Math.min(edge.from, edge.to);
+    const to = Math.max(edge.from, edge.to);
+    return `${from}-${to}`;
+}
+
+function findPathEdgesInTree(treeEdges, fromNodeId, toNodeId) {
+    const adjacency = new Map();
+
+    treeEdges.forEach((edge) => {
+        const fromEdges = adjacency.get(edge.from) || [];
+        const toEdges = adjacency.get(edge.to) || [];
+
+        fromEdges.push({ nodeId: edge.to, edge });
+        toEdges.push({ nodeId: edge.from, edge });
+        adjacency.set(edge.from, fromEdges);
+        adjacency.set(edge.to, toEdges);
+    });
+
+    const stack = [{ nodeId: fromNodeId, parentNodeId: null, pathEdges: [] }];
+
+    while (stack.length > 0) {
+        const current = stack.pop();
+
+        if (current.nodeId === toNodeId) {
+            return current.pathEdges;
+        }
+
+        (adjacency.get(current.nodeId) || []).forEach((next) => {
+            if (next.nodeId !== current.parentNodeId) {
+                stack.push({
+                    nodeId: next.nodeId,
+                    parentNodeId: current.nodeId,
+                    pathEdges: [...current.pathEdges, next.edge]
+                });
+            }
+        });
+    }
+
+    return [];
+}
+
+function findAlternativeMstSwaps(edges, selectedEdges) {
+    const selectedEdgeKeys = new Set(selectedEdges.map(getEdgeKey));
+
+    return edges
+        .filter((edge) => !selectedEdgeKeys.has(getEdgeKey(edge)))
+        .flatMap((edge) => {
+            const pathEdges = findPathEdgesInTree(selectedEdges, edge.from, edge.to);
+            const removableEdges = pathEdges.filter((pathEdge) => pathEdge.weight === edge.weight);
+
+            return removableEdges.map((removableEdge) => ({
+                add: edge,
+                remove: removableEdge
+            }));
+        });
+}
+
+function appendAlternativeMstStep(calculationSteps, edges, selectedEdges, totalWeight) {
+    const alternativeSwaps = findAlternativeMstSwaps(edges, selectedEdges);
+
+    if (alternativeSwaps.length === 0) {
+        calculationSteps.push({
+            title: 'Soluciones alternativas',
+            details: ['No se detectaron intercambios de igual peso. El arbol minimo obtenido es unico con estas aristas.']
+        });
+        return;
+    }
+
+    calculationSteps.push({
+        title: 'Soluciones alternativas',
+        details: [
+            `Existen otros arboles de expansion minima con el mismo peso total: ${totalWeight}.`,
+            ...alternativeSwaps.slice(0, 5).map((swap) => (
+                `Se puede agregar ${formatEdge(swap.add)} y quitar ${formatEdge(swap.remove)} para obtener otro arbol minimo.`
+            ))
+        ]
+    });
+}
+
+function getAlternativeMstText(edges, selectedEdges, totalWeight) {
+    const alternativeSwaps = findAlternativeMstSwaps(edges, selectedEdges);
+
+    if (alternativeSwaps.length === 0) {
+        return '';
+    }
+
+    const swapText = alternativeSwaps
+        .slice(0, 3)
+        .map((swap) => `agregar ${formatEdge(swap.add)} y quitar ${formatEdge(swap.remove)}`)
+        .join(' ; ');
+
+    return `Tambien existen otros arboles minimos con peso ${totalWeight}: ${swapText}.`;
+}
+
+function findShortestPaths(edges, distances, sourceNodeId, targetNodeId, totalWeight) {
+    const adjacency = new Map();
+
+    edges.forEach((edge) => {
+        const fromEdges = adjacency.get(edge.from) || [];
+        const toEdges = adjacency.get(edge.to) || [];
+
+        fromEdges.push({ nodeId: edge.to, edge });
+        toEdges.push({ nodeId: edge.from, edge });
+        adjacency.set(edge.from, fromEdges);
+        adjacency.set(edge.to, toEdges);
+    });
+
+    const paths = [];
+    const visit = (nodeId, pathNodeIds, pathEdges) => {
+        if (paths.length >= 10) {
+            return;
+        }
+
+        if (nodeId === targetNodeId) {
+            const pathWeight = pathEdges.reduce((sum, edge) => sum + edge.weight, 0);
+
+            if (pathWeight === totalWeight) {
+                paths.push({
+                    nodeIds: pathNodeIds,
+                    edges: pathEdges
+                });
+            }
+            return;
+        }
+
+        (adjacency.get(nodeId) || []).forEach((next) => {
+            if (pathNodeIds.includes(next.nodeId)) {
+                return;
+            }
+
+            if (distances.get(nodeId) + next.edge.weight !== distances.get(next.nodeId)) {
+                return;
+            }
+
+            visit(next.nodeId, [...pathNodeIds, next.nodeId], [...pathEdges, next.edge]);
+        });
+    };
+
+    visit(sourceNodeId, [sourceNodeId], []);
+    return paths;
+}
+
+function getAlternativePathTexts(edges, distances, sourceNodeId, targetNodeId, totalWeight, selectedPathText) {
+    return findShortestPaths(edges, distances, sourceNodeId, targetNodeId, totalWeight)
+        .map((path) => path.nodeIds.join(' -> '))
+        .filter((pathText) => pathText !== selectedPathText);
+}
+
 export function calculatePrim(nodes, edges) {
     if (nodes.length === 0) {
         return {
@@ -123,11 +276,14 @@ export function calculatePrim(nodes, edges) {
     const resultText = `Aristas: ${selectedEdges
         .map((edge) => `(${edge.from}, ${edge.to})`)
         .join(' - ')}`;
+    const alternativeResultText = getAlternativeMstText(edges, selectedEdges, totalWeight);
+    appendAlternativeMstStep(calculationSteps, edges, selectedEdges, totalWeight);
 
     return {
         mstEdges: selectedEdges,
         resultNodeIds,
         resultText,
+        alternativeResultText,
         calculationSteps,
         totalWeight,
         message: `Arbol de expansion minima calculado con Prim. Peso total: ${totalWeight}.`
@@ -267,11 +423,15 @@ export function calculateKruskal(nodes, edges) {
     const resultText = `Aristas: ${selectedEdges
         .map((edge) => `(${edge.from}, ${edge.to})`)
         .join(' - ')}`;
+    const alternativeResultText = getAlternativeMstText(edges, selectedEdges, totalWeight);
+
+    appendAlternativeMstStep(calculationSteps, edges, selectedEdges, totalWeight);
 
     return {
         mstEdges: selectedEdges,
         resultNodeIds,
         resultText,
+        alternativeResultText,
         calculationSteps,
         totalWeight,
         message: `Arbol de expansion minima calculado con Kruskal. Peso total: ${totalWeight}.`
@@ -427,10 +587,34 @@ export function calculateDijkstra(nodes, edges, sourceNodeId, targetNodeId) {
         resultNodeIds.push(edge.from === previousPathNodeId ? edge.to : edge.from);
     });
 
+    const selectedPathText = resultNodeIds.join(' -> ');
+    const alternativePathTexts = getAlternativePathTexts(
+        edges,
+        distances,
+        sourceNodeId,
+        targetNodeId,
+        totalWeight,
+        selectedPathText
+    );
+    const alternativeResultText = alternativePathTexts.length
+        ? `Tambien existen otros caminos minimos con distancia ${totalWeight}: ${alternativePathTexts.slice(0, 3).join(' ; ')}.`
+        : '';
+
+    calculationSteps.push({
+        title: 'Soluciones alternativas',
+        details: alternativePathTexts.length
+            ? [
+                `Existen otros caminos minimos con distancia total ${distances.get(targetNodeId)}.`,
+                ...alternativePathTexts.slice(0, 5).map((pathText) => `Camino alternativo: ${pathText}.`)
+            ]
+            : ['No se detectaron otros caminos con la misma distancia total.']
+    });
+
     return {
         pathEdges,
         resultNodeIds,
         resultText: `Ruta: ${resultNodeIds.join(' -> ')}`,
+        alternativeResultText,
         calculationSteps,
         totalWeight,
         message: `Ruta mas corta calculada con Dijkstra. Distancia total: ${totalWeight}.`

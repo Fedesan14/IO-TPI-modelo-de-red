@@ -14,6 +14,7 @@ export function useGraphEditor() {
     const [resultEdges, setResultEdges] = useState([]);
     const [resultNodeIds, setResultNodeIds] = useState([]);
     const [resultText, setResultText] = useState('');
+    const [alternativeResultText, setAlternativeResultText] = useState('');
     const [calculationSteps, setCalculationSteps] = useState([]);
     const [strategy, setStrategy] = useState('prim');
     const [sourceNodeId, setSourceNodeId] = useState('');
@@ -152,6 +153,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setAlternativeResultText('');
         setCalculationSteps([]);
         setTotalWeight(null);
     };
@@ -318,6 +320,7 @@ export function useGraphEditor() {
         setResultEdges(result.mstEdges || result.pathEdges || []);
         setResultNodeIds(result.resultNodeIds || []);
         setResultText(result.resultText || '');
+        setAlternativeResultText(result.alternativeResultText || '');
         setCalculationSteps(result.calculationSteps || []);
         setTotalWeight(result.totalWeight);
         setMessage(result.message || '');
@@ -368,6 +371,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
         setMovingNodeId(null);
@@ -436,6 +440,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
         setDragStartNodeId(null);
@@ -490,6 +495,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
         setDragStartNodeId(null);
@@ -516,6 +522,7 @@ export function useGraphEditor() {
         setResultEdges([]);
         setResultNodeIds([]);
         setResultText('');
+        setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
         setDragStartNodeId(null);
@@ -537,6 +544,7 @@ export function useGraphEditor() {
         resultEdgeIds,
         resultNodes,
         resultText,
+        alternativeResultText,
         calculationSteps,
         strategy,
         sourceNodeId,

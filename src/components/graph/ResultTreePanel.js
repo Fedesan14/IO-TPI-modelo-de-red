@@ -2,6 +2,7 @@ function ResultTreePanel({
     resultNodes,
     resultEdges,
     resultText,
+    alternativeResultText,
     strategy,
     totalWeight,
     getResultNodeById
@@ -29,7 +30,8 @@ function ResultTreePanel({
             </div>
             {totalWeight !== null && resultText && (
                 <div className='result-summary'>
-                    {resultText}
+                    <span>{resultText}</span>
+                    {alternativeResultText && <span className='alternative-result'>{alternativeResultText}</span>}
                 </div>
             )}
 
