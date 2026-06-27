@@ -3,6 +3,7 @@ import BookGraphLegend from '../components/graph/BookGraphLegend';
 import GraphToolbar from '../components/graph/GraphToolbar';
 import GraphWorkspace from '../components/graph/GraphWorkspace';
 import ErrorToast from '../components/graph/ErrorToast';
+import EdgeWeightModal from '../components/graph/EdgeWeightModal';
 import HowToPanel from '../components/graph/HowToPanel';
 import ModelPanel from '../components/graph/ModelPanel';
 import { useGraphEditor } from '../hooks/useGraphEditor';
@@ -71,6 +72,13 @@ function ContentPage () {
             <ErrorToast
                 toast={graphEditor.errorToast}
                 onClose={graphEditor.clearErrorToast}
+            />
+
+            <EdgeWeightModal
+                modal={graphEditor.weightModal}
+                onValueChange={graphEditor.updateWeightModalValue}
+                onSubmit={graphEditor.submitWeightModal}
+                onClose={graphEditor.closeWeightModal}
             />
         </div>
     )

@@ -32,6 +32,7 @@ export function useGraphEditor() {
     const [message, setMessage] = useState('Doble click o toque en el fondo para agregar nodos. Toca dos nodos para crear una arista.');
     const [errorToast, setErrorToast] = useState(null);
     const [totalWeight, setTotalWeight] = useState(null);
+    const [weightModal, setWeightModal] = useState(null);
 
     const resultEdgeIds = useMemo(() => new Set(resultEdges.map((edge) => edge.id)), [resultEdges]);
 
@@ -191,6 +192,28 @@ export function useGraphEditor() {
         ));
     };
 
+    const openWeightModal = (modalConfig) => {
+        clearErrorToast();
+        setWeightModal({
+            value: modalConfig.initialWeight ? String(modalConfig.initialWeight) : '',
+            error: '',
+            ...modalConfig
+        });
+    };
+
+    const closeWeightModal = () => {
+        setWeightModal(null);
+        setSelectedNodeId(null);
+    };
+
+    const updateWeightModalValue = (value) => {
+        setWeightModal((currentModal) => (
+            currentModal
+                ? { ...currentModal, value, error: '' }
+                : currentModal
+        ));
+    };
+
     const createEdgeBetweenNodes = (sourceNodeId, targetNodeId) => {
         if (!sourceNodeId || !targetNodeId || sourceNodeId === targetNodeId) {
             return false;
@@ -209,29 +232,62 @@ export function useGraphEditor() {
             return false;
         }
 
-        const weightInput = window.prompt(`Peso de la arista ${sourceNodeId} - ${targetNodeId}:`);
-        const weight = Number(weightInput);
+        openWeightModal({
+            mode: 'create',
+            sourceNodeId,
+            targetNodeId,
+            title: 'Peso de la arista',
+            submitLabel: 'Crear arista'
+        });
+        return true;
+    };
 
-        if (!weightInput || Number.isNaN(weight) || weight <= 0) {
-            showError('La arista no se creo porque el peso debe ser un numero positivo.');
-            setSelectedNodeId(null);
-            return false;
+    const submitWeightModal = () => {
+        if (!weightModal) {
+            return;
         }
 
-        const nextEdge = {
-            id: edges.length ? Math.max(...edges.map((edge) => edge.id)) + 1 : 1,
-            from: sourceNodeId,
-            to: targetNodeId,
-            weight
-        };
+        const weight = Number(weightModal.value);
 
-        setEdges((currentEdges) => [...currentEdges, nextEdge]);
+        if (!weightModal.value || Number.isNaN(weight) || weight <= 0) {
+            setWeightModal((currentModal) => (
+                currentModal
+                    ? { ...currentModal, error: 'Ingresá un número positivo.' }
+                    : currentModal
+            ));
+            return;
+        }
+
+        if (weightModal.mode === 'create') {
+            const nextEdge = {
+                id: edges.length ? Math.max(...edges.map((edge) => edge.id)) + 1 : 1,
+                from: weightModal.sourceNodeId,
+                to: weightModal.targetNodeId,
+                weight
+            };
+
+            setEdges((currentEdges) => [...currentEdges, nextEdge]);
+            setBookGraphReference(null);
+            clearErrorToast();
+            resetResult();
+            setSelectedNodeId(null);
+            setWeightModal(null);
+            setMessage(`Arista ${weightModal.sourceNodeId} - ${weightModal.targetNodeId} creada con peso ${weight}.`);
+            return;
+        }
+
+        setEdges((currentEdges) => (
+            currentEdges.map((currentEdge) => (
+                currentEdge.id === weightModal.edgeId
+                    ? { ...currentEdge, weight }
+                    : currentEdge
+            ))
+        ));
         setBookGraphReference(null);
         clearErrorToast();
         resetResult();
-        setSelectedNodeId(null);
-        setMessage(`Arista ${sourceNodeId} - ${targetNodeId} creada con peso ${weight}.`);
-        return true;
+        setWeightModal(null);
+        setMessage(`Peso de la arista ${weightModal.sourceNodeId} - ${weightModal.targetNodeId} actualizado a ${weight}.`);
     };
 
     const addNodeAtPosition = (position) => {
@@ -462,28 +518,15 @@ export function useGraphEditor() {
             return;
         }
 
-        const weightInput = window.prompt(
-            `Nuevo peso de la arista ${edge.from} - ${edge.to}:`,
-            edge.weight
-        );
-        const weight = Number(weightInput);
-
-        if (!weightInput || Number.isNaN(weight) || weight <= 0) {
-            showError('El peso no se modifico porque debe ser un numero positivo.');
-            return;
-        }
-
-        setEdges((currentEdges) => (
-            currentEdges.map((currentEdge) => (
-                currentEdge.id === edgeId
-                    ? { ...currentEdge, weight }
-                    : currentEdge
-            ))
-        ));
-        setBookGraphReference(null);
-        clearErrorToast();
-        resetResult();
-        setMessage(`Peso de la arista ${edge.from} - ${edge.to} actualizado a ${weight}.`);
+        openWeightModal({
+            mode: 'edit',
+            edgeId,
+            sourceNodeId: edge.from,
+            targetNodeId: edge.to,
+            initialWeight: edge.weight,
+            title: 'Editar peso',
+            submitLabel: 'Guardar peso'
+        });
     };
 
     const deleteNode = useCallback((nodeId) => {
@@ -497,6 +540,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
+        setWeightModal(null);
         setMovingNodeId(null);
         setIsOverTrash(false);
         setSourceNodeId((currentSourceNodeId) => (
@@ -554,6 +598,7 @@ export function useGraphEditor() {
         setSelectedNodeId(null);
         clearMoveTimer();
         nodePointerRef.current = null;
+        setWeightModal(null);
         setMovingNodeId(null);
         setIsOverTrash(false);
         setSourceNodeId('');
@@ -593,6 +638,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
+        setWeightModal(null);
         setMovingNodeId(null);
         setSourceNodeId(graph.nodes[0]?.id || '');
         setTargetNodeId(graph.nodes[graph.nodes.length - 1]?.id || '');
@@ -618,6 +664,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
+        setWeightModal(null);
         setMovingNodeId(null);
         setSourceNodeId(graph.nodes[0]?.id || '');
         setTargetNodeId(graph.nodes[graph.nodes.length - 1]?.id || '');
@@ -647,6 +694,7 @@ export function useGraphEditor() {
         bookGraphReference,
         message,
         errorToast,
+        weightModal,
         totalWeight,
         setRandomNodeCount,
         setSourceNodeId,
@@ -661,6 +709,9 @@ export function useGraphEditor() {
         handleMouseUp,
         handleMouseMove,
         updateEdgeWeight,
+        updateWeightModalValue,
+        submitWeightModal,
+        closeWeightModal,
         calculateResult,
         clearGraph,
         clearErrorToast,
