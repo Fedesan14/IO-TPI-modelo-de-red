@@ -8,7 +8,10 @@ export function useGraphEditor() {
         size: 92,
         offset: 18
     };
+    const nodeHitRadius = 30;
     const graphRef = useRef(null);
+    const backgroundPointerStartRef = useRef(null);
+    const dragStartNodeIdRef = useRef(null);
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [resultEdges, setResultEdges] = useState([]);
@@ -27,7 +30,7 @@ export function useGraphEditor() {
     const [previewPosition, setPreviewPosition] = useState(null);
     const [randomNodeCount, setRandomNodeCount] = useState(6);
     const [bookGraphReference, setBookGraphReference] = useState(null);
-    const [message, setMessage] = useState('Doble click para agregar nodos. Arrastra entre nodos para crear aristas.');
+    const [message, setMessage] = useState('Doble click o toque en el fondo para agregar nodos. Arrastra entre nodos para crear aristas.');
     const [errorToast, setErrorToast] = useState(null);
     const [totalWeight, setTotalWeight] = useState(null);
 
@@ -149,6 +152,16 @@ export function useGraphEditor() {
         return resultNodes.find((node) => node.id === nodeId);
     };
 
+    const getNodeAtPosition = (position, excludedNodeId = null) => {
+        return nodes.find((node) => {
+            if (node.id === excludedNodeId) {
+                return false;
+            }
+
+            return Math.hypot(node.x - position.x, node.y - position.y) <= nodeHitRadius;
+        });
+    };
+
     const resetResult = () => {
         setResultEdges([]);
         setResultNodeIds([]);
@@ -169,12 +182,7 @@ export function useGraphEditor() {
         setErrorToast(null);
     }, []);
 
-    const handleDoubleClick = (event) => {
-        if (event.target !== graphRef.current) {
-            return;
-        }
-
-        const position = getPointerPosition(event);
+    const addNodeAtPosition = (position) => {
         const nextNode = {
             id: nodes.length ? Math.max(...nodes.map((node) => node.id)) + 1 : 1,
             x: position.x,
@@ -194,8 +202,59 @@ export function useGraphEditor() {
         setMessage(`Nodo ${nextNode.id} agregado.`);
     };
 
+    const handleDoubleClick = (event) => {
+        if (event.target !== graphRef.current) {
+            return;
+        }
+
+        addNodeAtPosition(getPointerPosition(event));
+    };
+
+    const handleBackgroundPointerDown = (event) => {
+        if (event.target !== graphRef.current || event.pointerType === 'mouse') {
+            backgroundPointerStartRef.current = null;
+            return;
+        }
+
+        backgroundPointerStartRef.current = {
+            pointerId: event.pointerId,
+            x: event.clientX,
+            y: event.clientY
+        };
+    };
+
+    const handleBackgroundPointerUp = (event) => {
+        const activeSourceNodeId = dragStartNodeIdRef.current;
+        const targetNode = activeSourceNodeId
+            ? getNodeAtPosition(getPointerPosition(event), activeSourceNodeId)
+            : null;
+
+        if (targetNode) {
+            handleNodeMouseUp(targetNode.id, event);
+            return;
+        }
+
+        const pointerStart = backgroundPointerStartRef.current;
+        backgroundPointerStartRef.current = null;
+
+        if (!pointerStart || event.pointerId !== pointerStart.pointerId || event.target !== graphRef.current) {
+            handleMouseUp(event);
+            return;
+        }
+
+        const movement = Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y);
+
+        if (movement <= 8) {
+            addNodeAtPosition(getPointerPosition(event));
+            return;
+        }
+
+        handleMouseUp(event);
+    };
+
     const handleNodeMouseDown = (nodeId, event) => {
         event.stopPropagation();
+        event.preventDefault();
 
         if (toolMode === 'move') {
             setSelectedNodeId(nodeId);
@@ -204,12 +263,14 @@ export function useGraphEditor() {
             return;
         }
 
+        dragStartNodeIdRef.current = nodeId;
         setDragStartNodeId(nodeId);
         setPreviewPosition(getPointerPosition(event));
     };
 
     const handleNodeMouseUp = (targetNodeId, event) => {
         event.stopPropagation();
+        event.preventDefault();
 
         if (toolMode === 'move') {
             const position = getPointerPosition(event);
@@ -226,7 +287,15 @@ export function useGraphEditor() {
             return;
         }
 
-        if (!dragStartNodeId || dragStartNodeId === targetNodeId) {
+        const sourceNodeId = dragStartNodeIdRef.current || dragStartNodeId;
+        const position = getPointerPosition(event);
+        const targetNode = sourceNodeId === targetNodeId
+            ? getNodeAtPosition(position, sourceNodeId)
+            : getNodeById(targetNodeId);
+        const resolvedTargetNodeId = targetNode?.id || targetNodeId;
+
+        if (!sourceNodeId || sourceNodeId === resolvedTargetNodeId) {
+            dragStartNodeIdRef.current = null;
             setDragStartNodeId(null);
             setPreviewPosition(null);
             return;
@@ -234,23 +303,25 @@ export function useGraphEditor() {
 
         const edgeAlreadyExists = edges.some((edge) => {
             return (
-                (edge.from === dragStartNodeId && edge.to === targetNodeId) ||
-                (edge.from === targetNodeId && edge.to === dragStartNodeId)
+                (edge.from === sourceNodeId && edge.to === resolvedTargetNodeId) ||
+                (edge.from === resolvedTargetNodeId && edge.to === sourceNodeId)
             );
         });
 
         if (edgeAlreadyExists) {
             showError('Ya existe una arista entre esos nodos.');
+            dragStartNodeIdRef.current = null;
             setDragStartNodeId(null);
             setPreviewPosition(null);
             return;
         }
 
-        const weightInput = window.prompt(`Peso de la arista ${dragStartNodeId} - ${targetNodeId}:`);
+        const weightInput = window.prompt(`Peso de la arista ${sourceNodeId} - ${resolvedTargetNodeId}:`);
         const weight = Number(weightInput);
 
         if (!weightInput || Number.isNaN(weight) || weight <= 0) {
             showError('La arista no se creo porque el peso debe ser un numero positivo.');
+            dragStartNodeIdRef.current = null;
             setDragStartNodeId(null);
             setPreviewPosition(null);
             return;
@@ -258,8 +329,8 @@ export function useGraphEditor() {
 
         const nextEdge = {
             id: edges.length ? Math.max(...edges.map((edge) => edge.id)) + 1 : 1,
-            from: dragStartNodeId,
-            to: targetNodeId,
+            from: sourceNodeId,
+            to: resolvedTargetNodeId,
             weight
         };
 
@@ -267,7 +338,8 @@ export function useGraphEditor() {
         setBookGraphReference(null);
         clearErrorToast();
         resetResult();
-        setMessage(`Arista ${dragStartNodeId} - ${targetNodeId} creada con peso ${weight}.`);
+        setMessage(`Arista ${sourceNodeId} - ${resolvedTargetNodeId} creada con peso ${weight}.`);
+        dragStartNodeIdRef.current = null;
         setDragStartNodeId(null);
         setPreviewPosition(null);
     };
@@ -283,6 +355,7 @@ export function useGraphEditor() {
             }
         }
 
+        dragStartNodeIdRef.current = null;
         setDragStartNodeId(null);
         setMovingNodeId(null);
         setIsOverTrash(false);
@@ -303,7 +376,7 @@ export function useGraphEditor() {
             return;
         }
 
-        if (!dragStartNodeId) {
+        if (!dragStartNodeIdRef.current && !dragStartNodeId) {
             return;
         }
 
@@ -374,6 +447,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
+        dragStartNodeIdRef.current = null;
         setMovingNodeId(null);
         setDragStartNodeId(null);
         setIsOverTrash(false);
@@ -403,6 +477,7 @@ export function useGraphEditor() {
                 const nextToolMode = toolMode === 'connect' ? 'move' : 'connect';
                 setToolMode(nextToolMode);
                 setSelectedNodeId(null);
+                dragStartNodeIdRef.current = null;
                 setDragStartNodeId(null);
                 setMovingNodeId(null);
                 setIsOverTrash(false);
@@ -443,6 +518,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
+        dragStartNodeIdRef.current = null;
         setDragStartNodeId(null);
         setMovingNodeId(null);
         setIsOverTrash(false);
@@ -452,7 +528,7 @@ export function useGraphEditor() {
         setBookGraphReference(null);
         setTotalWeight(null);
         clearErrorToast();
-        setMessage('Grafo limpio. Doble click para agregar nuevos nodos.');
+        setMessage('Grafo limpio. Doble click o toque en el fondo para agregar nuevos nodos.');
     };
 
     const selectStrategy = (nextStrategy) => {
@@ -470,6 +546,7 @@ export function useGraphEditor() {
     const selectToolMode = (nextToolMode) => {
         setToolMode(nextToolMode);
         setSelectedNodeId(null);
+        dragStartNodeIdRef.current = null;
         setDragStartNodeId(null);
         setMovingNodeId(null);
         setIsOverTrash(false);
@@ -498,6 +575,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
+        dragStartNodeIdRef.current = null;
         setDragStartNodeId(null);
         setMovingNodeId(null);
         setPreviewPosition(null);
@@ -525,6 +603,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
+        dragStartNodeIdRef.current = null;
         setDragStartNodeId(null);
         setMovingNodeId(null);
         setPreviewPosition(null);
@@ -566,6 +645,8 @@ export function useGraphEditor() {
         getNodeById,
         getResultNodeById,
         handleDoubleClick,
+        handleBackgroundPointerDown,
+        handleBackgroundPointerUp,
         handleNodeMouseDown,
         handleNodeMouseUp,
         handleMouseUp,

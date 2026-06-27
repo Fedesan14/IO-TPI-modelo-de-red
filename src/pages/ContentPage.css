@@ -24,6 +24,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    min-width: 0;
 }
 
 .actions {
@@ -51,6 +52,8 @@
     border-radius: 8px;
     display: flex;
     gap: 7px;
+    max-width: 100%;
+    min-width: 0;
     padding: 3px;
 }
 
@@ -70,6 +73,7 @@
     color: var(--utn-text);
     font-size: 14px;
     font-weight: 800;
+    min-width: 0;
     padding: 8px 6px;
 }
 
@@ -239,6 +243,7 @@
     height: var(--workspace-height);
     overflow: hidden;
     position: relative;
+    touch-action: none;
     width: 100%;
 }
 
@@ -684,6 +689,15 @@
 
     .toolbar-left {
         width: 100%;
+    }
+
+    .strategy-controls {
+        width: 100%;
+    }
+
+    .strategy-controls select {
+        flex: 1;
+        max-width: none;
     }
 
     .workspace {

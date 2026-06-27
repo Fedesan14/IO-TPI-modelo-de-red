@@ -10,21 +10,32 @@ function GraphCanvas({
     previewPosition,
     getNodeById,
     onDoubleClick,
+    onBackgroundPointerDown,
+    onBackgroundPointerUp,
     onMouseMove,
-    onMouseUp,
     onNodeMouseDown,
     onNodeMouseUp,
     onEdgeDoubleClick
 }) {
     const previewStartNode = dragStartNodeId ? getNodeById(dragStartNodeId) : null;
     const showTrashDropZone = Boolean(movingNodeId);
+    const handleEdgePointerUp = (edgeId, event) => {
+        event.stopPropagation();
+
+        if (event.pointerType === 'mouse' || dragStartNodeId || movingNodeId) {
+            return;
+        }
+
+        onEdgeDoubleClick(edgeId);
+    };
 
     return (
         <div
             ref={graphRef}
             onDoubleClick={onDoubleClick}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
+            onPointerDown={onBackgroundPointerDown}
+            onPointerMove={onMouseMove}
+            onPointerUp={onBackgroundPointerUp}
             className='background'
         >
             <svg className='edge-layer'>
@@ -48,6 +59,7 @@ function GraphCanvas({
                                 x2={toNode.x}
                                 y2={toNode.y}
                                 className='edge-hitbox'
+                                onPointerUp={(event) => handleEdgePointerUp(edge.id, event)}
                                 onDoubleClick={(event) => {
                                     event.stopPropagation();
                                     onEdgeDoubleClick(edge.id);
@@ -64,6 +76,7 @@ function GraphCanvas({
                                 x={middleX}
                                 y={middleY}
                                 className={isResultEdge ? 'edge-weight mst-weight' : 'edge-weight'}
+                                onPointerUp={(event) => handleEdgePointerUp(edge.id, event)}
                                 onDoubleClick={(event) => {
                                     event.stopPropagation();
                                     onEdgeDoubleClick(edge.id);
@@ -110,8 +123,8 @@ function GraphCanvas({
                             : 'node'
                     }
                     style={{ left: node.x, top: node.y }}
-                    onMouseDown={(event) => onNodeMouseDown(node.id, event)}
-                    onMouseUp={(event) => onNodeMouseUp(node.id, event)}
+                    onPointerDown={(event) => onNodeMouseDown(node.id, event)}
+                    onPointerUp={(event) => onNodeMouseUp(node.id, event)}
                 >
                     {node.id}
                 </button>

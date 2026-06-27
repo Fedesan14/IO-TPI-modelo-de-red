@@ -54,8 +54,9 @@ function ContentPage () {
                 getNodeById={graphEditor.getNodeById}
                 getResultNodeById={graphEditor.getResultNodeById}
                 onDoubleClick={graphEditor.handleDoubleClick}
+                onBackgroundPointerDown={graphEditor.handleBackgroundPointerDown}
+                onBackgroundPointerUp={graphEditor.handleBackgroundPointerUp}
                 onMouseMove={graphEditor.handleMouseMove}
-                onMouseUp={graphEditor.handleMouseUp}
                 onNodeMouseDown={graphEditor.handleNodeMouseDown}
                 onNodeMouseUp={graphEditor.handleNodeMouseUp}
                 onEdgeDoubleClick={graphEditor.updateEdgeWeight}

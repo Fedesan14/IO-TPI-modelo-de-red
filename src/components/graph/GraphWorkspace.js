@@ -20,8 +20,9 @@ function GraphWorkspace({
     getNodeById,
     getResultNodeById,
     onDoubleClick,
+    onBackgroundPointerDown,
+    onBackgroundPointerUp,
     onMouseMove,
-    onMouseUp,
     onNodeMouseDown,
     onNodeMouseUp,
     onEdgeDoubleClick
@@ -40,8 +41,9 @@ function GraphWorkspace({
                 previewPosition={previewPosition}
                 getNodeById={getNodeById}
                 onDoubleClick={onDoubleClick}
+                onBackgroundPointerDown={onBackgroundPointerDown}
+                onBackgroundPointerUp={onBackgroundPointerUp}
                 onMouseMove={onMouseMove}
-                onMouseUp={onMouseUp}
                 onNodeMouseDown={onNodeMouseDown}
                 onNodeMouseUp={onNodeMouseUp}
                 onEdgeDoubleClick={onEdgeDoubleClick}
