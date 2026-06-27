@@ -17,12 +17,10 @@ function ContentPage () {
 
             <GraphToolbar
                 nodes={graphEditor.nodes}
-                toolMode={graphEditor.toolMode}
                 strategy={graphEditor.strategy}
                 sourceNodeId={graphEditor.sourceNodeId}
                 targetNodeId={graphEditor.targetNodeId}
                 randomNodeCount={graphEditor.randomNodeCount}
-                onSelectToolMode={graphEditor.selectToolMode}
                 onSelectStrategy={graphEditor.selectStrategy}
                 onSourceNodeChange={graphEditor.setSourceNodeId}
                 onTargetNodeChange={graphEditor.setTargetNodeId}
@@ -47,10 +45,8 @@ function ContentPage () {
                 strategy={graphEditor.strategy}
                 totalWeight={graphEditor.totalWeight}
                 selectedNodeId={graphEditor.selectedNodeId}
-                dragStartNodeId={graphEditor.dragStartNodeId}
                 movingNodeId={graphEditor.movingNodeId}
                 isOverTrash={graphEditor.isOverTrash}
-                previewPosition={graphEditor.previewPosition}
                 getNodeById={graphEditor.getNodeById}
                 getResultNodeById={graphEditor.getResultNodeById}
                 onDoubleClick={graphEditor.handleDoubleClick}

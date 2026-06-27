@@ -8,11 +8,11 @@ function HowToPanel() {
             <div className='how-to-grid'>
                 <article>
                     <strong>1. Construir el grafo</strong>
-                    <p>Doble click o toque en el lienzo para agregar nodos. En modo Crear aristas, arrastrá desde un nodo hacia otro y asigná el peso.</p>
+                    <p>Doble click o toque en el lienzo para agregar nodos. Toca un nodo y luego otro para crear una arista y asignar el peso.</p>
                 </article>
                 <article>
                     <strong>2. Editar nodos y aristas</strong>
-                    <p>Usá Mover nodos para reubicarlos. Soltá un nodo sobre el tacho para eliminarlo, o seleccionalo y presioná Supr. Doble click o toque en una arista para cambiar su peso.</p>
+                    <p>Mantené apretado un nodo para reubicarlo. Soltalo sobre el tacho para eliminarlo, o seleccionalo y presioná Supr. Doble click o toque en una arista para cambiar su peso.</p>
                 </article>
                 <article>
                     <strong>3. Calcular resultados</strong>
@@ -20,7 +20,7 @@ function HowToPanel() {
                 </article>
                 <article>
                     <strong>Atajos</strong>
-                    <p>Espacio alterna entre Crear aristas y Mover nodos. Enter calcula la estrategia actual.</p>
+                    <p>Enter calcula la estrategia actual. Supr elimina el nodo seleccionado.</p>
                 </article>
             </div>
         </section>

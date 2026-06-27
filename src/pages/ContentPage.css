@@ -35,15 +35,6 @@
     justify-content: flex-end;
 }
 
-.tool-mode {
-    background-color: var(--utn-grid);
-    border: 1px solid var(--utn-border);
-    border-radius: 8px;
-    display: flex;
-    gap: 2px;
-    padding: 3px;
-}
-
 .strategy-controls,
 .path-controls {
     align-items: center;
@@ -94,17 +85,6 @@
     font-size: 14px;
     font-weight: 700;
     padding: 10px 14px;
-}
-
-.tool-mode button {
-    background-color: transparent;
-    color: var(--utn-text);
-}
-
-.tool-mode button.active-tool {
-    background-color: var(--utn-surface);
-    box-shadow: 0 1px 4px rgba(0, 47, 96, 0.14);
-    color: var(--utn-blue);
 }
 
 .random-controls {
@@ -279,13 +259,6 @@
 .mst-edge {
     stroke: var(--utn-success);
     stroke-width: 5;
-}
-
-.preview-edge {
-    stroke: var(--utn-blue);
-    stroke-dasharray: 8 7;
-    stroke-linecap: round;
-    stroke-width: 3;
 }
 
 .edge-weight {

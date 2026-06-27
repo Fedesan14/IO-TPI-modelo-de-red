@@ -4,10 +4,8 @@ function GraphCanvas({
     edges,
     resultEdgeIds,
     selectedNodeId,
-    dragStartNodeId,
     movingNodeId,
     isOverTrash,
-    previewPosition,
     getNodeById,
     onDoubleClick,
     onBackgroundPointerDown,
@@ -17,12 +15,11 @@ function GraphCanvas({
     onNodeMouseUp,
     onEdgeDoubleClick
 }) {
-    const previewStartNode = dragStartNodeId ? getNodeById(dragStartNodeId) : null;
     const showTrashDropZone = Boolean(movingNodeId);
     const handleEdgePointerUp = (edgeId, event) => {
         event.stopPropagation();
 
-        if (event.pointerType === 'mouse' || dragStartNodeId || movingNodeId) {
+        if (event.pointerType === 'mouse' || movingNodeId) {
             return;
         }
 
@@ -87,15 +84,6 @@ function GraphCanvas({
                         </g>
                     );
                 })}
-                {previewStartNode && previewPosition && (
-                    <line
-                        x1={previewStartNode.x}
-                        y1={previewStartNode.y}
-                        x2={previewPosition.x}
-                        y2={previewPosition.y}
-                        className='preview-edge'
-                    />
-                )}
             </svg>
 
             {showTrashDropZone && (
@@ -117,8 +105,7 @@ function GraphCanvas({
                     key={node.id}
                     type='button'
                     className={
-                        dragStartNodeId === node.id || movingNodeId === node.id
-                            || selectedNodeId === node.id
+                        movingNodeId === node.id || selectedNodeId === node.id
                             ? 'node selected-node'
                             : 'node'
                     }

@@ -1,11 +1,9 @@
 function GraphToolbar({
     nodes,
-    toolMode,
     strategy,
     sourceNodeId,
     targetNodeId,
     randomNodeCount,
-    onSelectToolMode,
     onSelectStrategy,
     onSourceNodeChange,
     onTargetNodeChange,
@@ -58,22 +56,6 @@ function GraphToolbar({
                 )}
             </div>
             <div className='actions'>
-                <div className='tool-mode' aria-label='Modo de edicion'>
-                    <button
-                        type='button'
-                        className={toolMode === 'connect' ? 'active-tool' : ''}
-                        onClick={() => onSelectToolMode('connect')}
-                    >
-                        Crear aristas
-                    </button>
-                    <button
-                        type='button'
-                        className={toolMode === 'move' ? 'active-tool' : ''}
-                        onClick={() => onSelectToolMode('move')}
-                    >
-                        Mover nodos
-                    </button>
-                </div>
                 <button type='button' onClick={onCalculateResult}>Calcular</button>
                 <button type='button' className='secondary-action' onClick={onClearGraph}>Limpiar grafo</button>
                 <div className='random-controls'>

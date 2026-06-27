@@ -13,10 +13,8 @@ function GraphWorkspace({
     strategy,
     totalWeight,
     selectedNodeId,
-    dragStartNodeId,
     movingNodeId,
     isOverTrash,
-    previewPosition,
     getNodeById,
     getResultNodeById,
     onDoubleClick,
@@ -35,10 +33,8 @@ function GraphWorkspace({
                 edges={edges}
                 resultEdgeIds={resultEdgeIds}
                 selectedNodeId={selectedNodeId}
-                dragStartNodeId={dragStartNodeId}
                 movingNodeId={movingNodeId}
                 isOverTrash={isOverTrash}
-                previewPosition={previewPosition}
                 getNodeById={getNodeById}
                 onDoubleClick={onDoubleClick}
                 onBackgroundPointerDown={onBackgroundPointerDown}

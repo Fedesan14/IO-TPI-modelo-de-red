@@ -8,10 +8,12 @@ export function useGraphEditor() {
         size: 92,
         offset: 18
     };
-    const nodeHitRadius = 30;
+    const nodeMoveDelay = 260;
+    const nodeMoveThreshold = 8;
     const graphRef = useRef(null);
     const backgroundPointerStartRef = useRef(null);
-    const dragStartNodeIdRef = useRef(null);
+    const nodePointerRef = useRef(null);
+    const moveTimerRef = useRef(null);
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [resultEdges, setResultEdges] = useState([]);
@@ -22,15 +24,12 @@ export function useGraphEditor() {
     const [strategy, setStrategy] = useState('prim');
     const [sourceNodeId, setSourceNodeId] = useState('');
     const [targetNodeId, setTargetNodeId] = useState('');
-    const [toolMode, setToolMode] = useState('connect');
     const [selectedNodeId, setSelectedNodeId] = useState(null);
-    const [dragStartNodeId, setDragStartNodeId] = useState(null);
     const [movingNodeId, setMovingNodeId] = useState(null);
     const [isOverTrash, setIsOverTrash] = useState(false);
-    const [previewPosition, setPreviewPosition] = useState(null);
     const [randomNodeCount, setRandomNodeCount] = useState(6);
     const [bookGraphReference, setBookGraphReference] = useState(null);
-    const [message, setMessage] = useState('Doble click o toque en el fondo para agregar nodos. Arrastra entre nodos para crear aristas.');
+    const [message, setMessage] = useState('Doble click o toque en el fondo para agregar nodos. Toca dos nodos para crear una arista.');
     const [errorToast, setErrorToast] = useState(null);
     const [totalWeight, setTotalWeight] = useState(null);
 
@@ -152,16 +151,6 @@ export function useGraphEditor() {
         return resultNodes.find((node) => node.id === nodeId);
     };
 
-    const getNodeAtPosition = (position, excludedNodeId = null) => {
-        return nodes.find((node) => {
-            if (node.id === excludedNodeId) {
-                return false;
-            }
-
-            return Math.hypot(node.x - position.x, node.y - position.y) <= nodeHitRadius;
-        });
-    };
-
     const resetResult = () => {
         setResultEdges([]);
         setResultNodeIds([]);
@@ -182,6 +171,69 @@ export function useGraphEditor() {
         setErrorToast(null);
     }, []);
 
+    const clearMoveTimer = () => {
+        if (moveTimerRef.current) {
+            window.clearTimeout(moveTimerRef.current);
+            moveTimerRef.current = null;
+        }
+    };
+
+    const startMovingNode = (nodeId, position) => {
+        setSelectedNodeId(null);
+        setMovingNodeId(nodeId);
+        setIsOverTrash(isPointerOverTrash(position));
+        setNodes((currentNodes) => (
+            currentNodes.map((node) => (
+                node.id === nodeId
+                    ? { ...node, x: position.x, y: position.y }
+                    : node
+            ))
+        ));
+    };
+
+    const createEdgeBetweenNodes = (sourceNodeId, targetNodeId) => {
+        if (!sourceNodeId || !targetNodeId || sourceNodeId === targetNodeId) {
+            return false;
+        }
+
+        const edgeAlreadyExists = edges.some((edge) => {
+            return (
+                (edge.from === sourceNodeId && edge.to === targetNodeId) ||
+                (edge.from === targetNodeId && edge.to === sourceNodeId)
+            );
+        });
+
+        if (edgeAlreadyExists) {
+            showError('Ya existe una arista entre esos nodos.');
+            setSelectedNodeId(null);
+            return false;
+        }
+
+        const weightInput = window.prompt(`Peso de la arista ${sourceNodeId} - ${targetNodeId}:`);
+        const weight = Number(weightInput);
+
+        if (!weightInput || Number.isNaN(weight) || weight <= 0) {
+            showError('La arista no se creo porque el peso debe ser un numero positivo.');
+            setSelectedNodeId(null);
+            return false;
+        }
+
+        const nextEdge = {
+            id: edges.length ? Math.max(...edges.map((edge) => edge.id)) + 1 : 1,
+            from: sourceNodeId,
+            to: targetNodeId,
+            weight
+        };
+
+        setEdges((currentEdges) => [...currentEdges, nextEdge]);
+        setBookGraphReference(null);
+        clearErrorToast();
+        resetResult();
+        setSelectedNodeId(null);
+        setMessage(`Arista ${sourceNodeId} - ${targetNodeId} creada con peso ${weight}.`);
+        return true;
+    };
+
     const addNodeAtPosition = (position) => {
         const nextNode = {
             id: nodes.length ? Math.max(...nodes.map((node) => node.id)) + 1 : 1,
@@ -199,6 +251,7 @@ export function useGraphEditor() {
             setTargetNodeId(nextNode.id);
         }
         resetResult();
+        setSelectedNodeId(null);
         setMessage(`Nodo ${nextNode.id} agregado.`);
     };
 
@@ -224,16 +277,6 @@ export function useGraphEditor() {
     };
 
     const handleBackgroundPointerUp = (event) => {
-        const activeSourceNodeId = dragStartNodeIdRef.current;
-        const targetNode = activeSourceNodeId
-            ? getNodeAtPosition(getPointerPosition(event), activeSourceNodeId)
-            : null;
-
-        if (targetNode) {
-            handleNodeMouseUp(targetNode.id, event);
-            return;
-        }
-
         const pointerStart = backgroundPointerStartRef.current;
         backgroundPointerStartRef.current = null;
 
@@ -256,95 +299,81 @@ export function useGraphEditor() {
         event.stopPropagation();
         event.preventDefault();
 
-        if (toolMode === 'move') {
-            setSelectedNodeId(nodeId);
-            setMovingNodeId(nodeId);
-            setMessage(`Moviendo nodo ${nodeId}.`);
-            return;
-        }
+        clearMoveTimer();
 
-        dragStartNodeIdRef.current = nodeId;
-        setDragStartNodeId(nodeId);
-        setPreviewPosition(getPointerPosition(event));
+        const position = getPointerPosition(event);
+        nodePointerRef.current = {
+            nodeId,
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            lastPosition: position,
+            hasMoved: false
+        };
+
+        moveTimerRef.current = window.setTimeout(() => {
+            const pointerState = nodePointerRef.current;
+
+            if (!pointerState || pointerState.pointerId !== event.pointerId) {
+                return;
+            }
+
+            pointerState.hasMoved = true;
+            pointerState.isMoving = true;
+            startMovingNode(nodeId, pointerState.lastPosition);
+            setMessage(`Moviendo nodo ${nodeId}.`);
+        }, nodeMoveDelay);
     };
 
     const handleNodeMouseUp = (targetNodeId, event) => {
         event.stopPropagation();
         event.preventDefault();
+        clearMoveTimer();
 
-        if (toolMode === 'move') {
+        const pointerState = nodePointerRef.current;
+        nodePointerRef.current = null;
+
+        const activeMovingNodeId = movingNodeId || (pointerState?.isMoving ? pointerState.nodeId : null);
+
+        if (activeMovingNodeId) {
             const position = getPointerPosition(event);
 
             if (isPointerOverTrash(position)) {
-                deleteNode(targetNodeId);
+                deleteNode(activeMovingNodeId);
                 setIsOverTrash(false);
                 return;
             }
 
             setMovingNodeId(null);
             setIsOverTrash(false);
-            setMessage(`Nodo ${targetNodeId} seleccionado. Presiona Supr para eliminarlo.`);
+            setSelectedNodeId(null);
+            setMessage(`Nodo ${activeMovingNodeId} reubicado.`);
             return;
         }
 
-        const sourceNodeId = dragStartNodeIdRef.current || dragStartNodeId;
-        const position = getPointerPosition(event);
-        const targetNode = sourceNodeId === targetNodeId
-            ? getNodeAtPosition(position, sourceNodeId)
-            : getNodeById(targetNodeId);
-        const resolvedTargetNodeId = targetNode?.id || targetNodeId;
-
-        if (!sourceNodeId || sourceNodeId === resolvedTargetNodeId) {
-            dragStartNodeIdRef.current = null;
-            setDragStartNodeId(null);
-            setPreviewPosition(null);
+        if (!pointerState || pointerState.pointerId !== event.pointerId || pointerState.hasMoved) {
             return;
         }
 
-        const edgeAlreadyExists = edges.some((edge) => {
-            return (
-                (edge.from === sourceNodeId && edge.to === resolvedTargetNodeId) ||
-                (edge.from === resolvedTargetNodeId && edge.to === sourceNodeId)
-            );
-        });
-
-        if (edgeAlreadyExists) {
-            showError('Ya existe una arista entre esos nodos.');
-            dragStartNodeIdRef.current = null;
-            setDragStartNodeId(null);
-            setPreviewPosition(null);
+        if (!selectedNodeId) {
+            setSelectedNodeId(targetNodeId);
+            setMessage(`Nodo ${targetNodeId} seleccionado. Toca otro nodo para crear una arista.`);
             return;
         }
 
-        const weightInput = window.prompt(`Peso de la arista ${sourceNodeId} - ${resolvedTargetNodeId}:`);
-        const weight = Number(weightInput);
-
-        if (!weightInput || Number.isNaN(weight) || weight <= 0) {
-            showError('La arista no se creo porque el peso debe ser un numero positivo.');
-            dragStartNodeIdRef.current = null;
-            setDragStartNodeId(null);
-            setPreviewPosition(null);
+        if (selectedNodeId === targetNodeId) {
+            setSelectedNodeId(null);
+            setMessage(`Seleccion del nodo ${targetNodeId} cancelada.`);
             return;
         }
 
-        const nextEdge = {
-            id: edges.length ? Math.max(...edges.map((edge) => edge.id)) + 1 : 1,
-            from: sourceNodeId,
-            to: resolvedTargetNodeId,
-            weight
-        };
-
-        setEdges((currentEdges) => [...currentEdges, nextEdge]);
-        setBookGraphReference(null);
-        clearErrorToast();
-        resetResult();
-        setMessage(`Arista ${sourceNodeId} - ${resolvedTargetNodeId} creada con peso ${weight}.`);
-        dragStartNodeIdRef.current = null;
-        setDragStartNodeId(null);
-        setPreviewPosition(null);
+        createEdgeBetweenNodes(selectedNodeId, targetNodeId);
     };
 
     const handleMouseUp = (event) => {
+        clearMoveTimer();
+        nodePointerRef.current = null;
+
         if (movingNodeId) {
             const position = getPointerPosition(event);
 
@@ -355,11 +384,8 @@ export function useGraphEditor() {
             }
         }
 
-        dragStartNodeIdRef.current = null;
-        setDragStartNodeId(null);
         setMovingNodeId(null);
         setIsOverTrash(false);
-        setPreviewPosition(null);
     };
 
     const handleMouseMove = (event) => {
@@ -376,11 +402,35 @@ export function useGraphEditor() {
             return;
         }
 
-        if (!dragStartNodeIdRef.current && !dragStartNodeId) {
+        const pointerState = nodePointerRef.current;
+
+        if (!pointerState || event.pointerId !== pointerState.pointerId) {
             return;
         }
 
-        setPreviewPosition(getPointerPosition(event));
+        const movement = Math.hypot(event.clientX - pointerState.startX, event.clientY - pointerState.startY);
+        const position = getPointerPosition(event);
+        pointerState.lastPosition = position;
+
+        if (!movingNodeId && movement > nodeMoveThreshold) {
+            clearMoveTimer();
+            pointerState.hasMoved = true;
+            pointerState.isMoving = true;
+            startMovingNode(pointerState.nodeId, position);
+            setMessage(`Moviendo nodo ${pointerState.nodeId}.`);
+            return;
+        }
+
+        if (movingNodeId) {
+            setIsOverTrash(isPointerOverTrash(position));
+            setNodes((currentNodes) => (
+                currentNodes.map((node) => (
+                    node.id === movingNodeId
+                        ? { ...node, x: position.x, y: position.y }
+                        : node
+                ))
+            ));
+        }
     };
 
     const calculateResult = useCallback(() => {
@@ -447,11 +497,8 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
-        dragStartNodeIdRef.current = null;
         setMovingNodeId(null);
-        setDragStartNodeId(null);
         setIsOverTrash(false);
-        setPreviewPosition(null);
         setSourceNodeId((currentSourceNodeId) => (
             Number(currentSourceNodeId) === nodeId ? '' : currentSourceNodeId
         ));
@@ -464,29 +511,16 @@ export function useGraphEditor() {
     }, []);
 
     useEffect(() => {
+        return () => {
+            clearMoveTimer();
+        };
+    }, []);
+
+    useEffect(() => {
         const handleKeyDown = (event) => {
             const editableTags = ['INPUT', 'SELECT', 'TEXTAREA'];
 
             if (editableTags.includes(event.target.tagName)) {
-                return;
-            }
-
-            if (event.code === 'Space') {
-                event.preventDefault();
-
-                const nextToolMode = toolMode === 'connect' ? 'move' : 'connect';
-                setToolMode(nextToolMode);
-                setSelectedNodeId(null);
-                dragStartNodeIdRef.current = null;
-                setDragStartNodeId(null);
-                setMovingNodeId(null);
-                setIsOverTrash(false);
-                setPreviewPosition(null);
-                setMessage(
-                    nextToolMode === 'connect'
-                        ? 'Modo crear aristas: arrastra desde un nodo hasta otro.'
-                        : 'Modo mover nodos: arrastra un nodo para reubicarlo.'
-                );
                 return;
             }
 
@@ -496,7 +530,7 @@ export function useGraphEditor() {
                 return;
             }
 
-            if (event.key === 'Delete' && toolMode === 'move' && selectedNodeId) {
+            if (event.key === 'Delete' && selectedNodeId) {
                 event.preventDefault();
                 deleteNode(selectedNodeId);
             }
@@ -507,7 +541,7 @@ export function useGraphEditor() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [deleteNode, selectedNodeId, toolMode, calculateResult]);
+    }, [deleteNode, selectedNodeId, calculateResult]);
 
     const clearGraph = () => {
         setNodes([]);
@@ -518,11 +552,10 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
-        dragStartNodeIdRef.current = null;
-        setDragStartNodeId(null);
+        clearMoveTimer();
+        nodePointerRef.current = null;
         setMovingNodeId(null);
         setIsOverTrash(false);
-        setPreviewPosition(null);
         setSourceNodeId('');
         setTargetNodeId('');
         setBookGraphReference(null);
@@ -543,21 +576,6 @@ export function useGraphEditor() {
         );
     };
 
-    const selectToolMode = (nextToolMode) => {
-        setToolMode(nextToolMode);
-        setSelectedNodeId(null);
-        dragStartNodeIdRef.current = null;
-        setDragStartNodeId(null);
-        setMovingNodeId(null);
-        setIsOverTrash(false);
-        setPreviewPosition(null);
-        setMessage(
-            nextToolMode === 'connect'
-                ? 'Modo crear aristas: arrastra desde un nodo hasta otro.'
-                : 'Modo mover nodos: arrastra un nodo para reubicarlo.'
-        );
-    };
-
     const generateRandomGraph = () => {
         const nodeCount = Math.max(2, Math.min(Number(randomNodeCount) || 2, 20));
         const graph = generateConnectedRandomGraph({
@@ -575,10 +593,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
-        dragStartNodeIdRef.current = null;
-        setDragStartNodeId(null);
         setMovingNodeId(null);
-        setPreviewPosition(null);
         setSourceNodeId(graph.nodes[0]?.id || '');
         setTargetNodeId(graph.nodes[graph.nodes.length - 1]?.id || '');
         setBookGraphReference(null);
@@ -603,10 +618,7 @@ export function useGraphEditor() {
         setAlternativeResultText('');
         setCalculationSteps([]);
         setSelectedNodeId(null);
-        dragStartNodeIdRef.current = null;
-        setDragStartNodeId(null);
         setMovingNodeId(null);
-        setPreviewPosition(null);
         setSourceNodeId(graph.nodes[0]?.id || '');
         setTargetNodeId(graph.nodes[graph.nodes.length - 1]?.id || '');
         setBookGraphReference(graph.reference);
@@ -628,12 +640,9 @@ export function useGraphEditor() {
         strategy,
         sourceNodeId,
         targetNodeId,
-        toolMode,
         selectedNodeId,
-        dragStartNodeId,
         movingNodeId,
         isOverTrash,
-        previewPosition,
         randomNodeCount,
         bookGraphReference,
         message,
@@ -656,7 +665,6 @@ export function useGraphEditor() {
         clearGraph,
         clearErrorToast,
         selectStrategy,
-        selectToolMode,
         generateRandomGraph,
         generateBookGraphExample
     };
