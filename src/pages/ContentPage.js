@@ -13,6 +13,8 @@ function ContentPage () {
 
     return (
         <div className='content-page'>
+            <HowToPanel />
+
             <GraphToolbar
                 nodes={graphEditor.nodes}
                 toolMode={graphEditor.toolMode}
@@ -32,8 +34,6 @@ function ContentPage () {
             />
 
             <BookGraphLegend reference={graphEditor.bookGraphReference} />
-
-            <HowToPanel />
 
             <GraphWorkspace
                 graphRef={graphEditor.graphRef}

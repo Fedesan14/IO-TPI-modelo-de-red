@@ -16,7 +16,7 @@ function HowToPanel() {
                 </article>
                 <article>
                     <strong>3. Calcular resultados</strong>
-                    <p>Elegí Prim o Dijkstra. Para Dijkstra, seleccioná origen y destino. Luego presioná Calcular o Enter para ver el resultado.</p>
+                    <p>Elegí el algoritmo. Para Dijkstra, seleccioná origen y destino. Luego presioná Calcular o Enter para ver el resultado.</p>
                 </article>
                 <article>
                     <strong>Atajos</strong>
